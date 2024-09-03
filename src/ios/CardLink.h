@@ -1,9 +1,9 @@
-#import <Cordova/CDVPlugin.h>
+#import <Cordova/CDV.h>
 
 @interface CardLink : CDVPlugin {
-｝
+  // Member variables go here.
+}
 
-// The hooks for our plugin commands
-- (void) cardlink: (CDVInvokedUrlCommand *) command;
+- (void)cardlink:(CDVInvokedUrlCommand*)command;
 
 @end

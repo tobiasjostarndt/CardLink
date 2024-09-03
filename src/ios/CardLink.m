@@ -2,14 +2,17 @@
 
 @implementation CardLink
 
-- (void) pluginInitialize
-｝
+- (void)cardlink:(CDVInvokedUrlCommand*)command{
+    CDVPluginResult* pluginResult = nil;
+    NSString* echo = [command.arguments objectAtIndex:0];
 
-- (void) cardlink: (CDVInvokedUrlCommand *) command {
-    NSString* arg0 = [command arguments objectAtIndex:0];
+    if (echo != nil && [echo length] > 0) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
+    } else {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+    }
 
-    CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString: arg0];
-    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 @end
