@@ -1,9 +1,9 @@
 {
-  "name": "konzept-ix-cardlink",
+  "name": "CardLink",
   "version": "1.0.0",
   "description": "CardLink Integration",
   "cordova": {
-    "id": "konzept-ix-cardlink",
+    "id": "CardLink",
     "platforms": [
       "ios"
     ]
