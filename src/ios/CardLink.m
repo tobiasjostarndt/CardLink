@@ -1,5 +1,4 @@
 #import "CardLink.h"
-#import ‹Cordova/CDVAvailability.h>
 
 @implementation CardLink
 
