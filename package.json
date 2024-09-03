@@ -1,0 +1,25 @@
+{
+  "name": "konzept-ix-cardlink",
+  "version": "1.0.0",
+  "description": "CardLink Integration",
+  "cordova": {
+    "id": "konzept-ix-cardlink",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tobiasjostarndt/CardLink.git"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios"
+  ],
+  "author": "Tobias Jostarndt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tobiasjostarndt/CardLink/issues"
+  },
+  "homepage": "https://github.com/tobiasjostarndt/CardLink#readme"
+}
