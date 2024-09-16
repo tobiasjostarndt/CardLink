@@ -1,121 +1,76 @@
-//
-//  WebSocketClient.m
-//  WebSocket
-//
-//  Created by Beatriz Correia on 26/04/2024.
-//
-
-#import <Foundation/Foundation.h>
-#import <Combine/Combine.h>
-#import <Starscream/Starscream.h>
-
+// WebSocketClient.m
 #import "WebSocketClient.h"
+
+@interface WebSocketClient ()
+
+@property (nonatomic, strong) NSURLSessionWebSocketTask *webSocketTask;
+@property (nonatomic, strong) NSURLSession *urlSession;
+@property (nonatomic, assign) BOOL isConnected;
+
+@end
 
 @implementation WebSocketClient
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _connectionStatusPublisher = [[PassthroughSubject alloc] init];
-        _messagePublisher = [[PassthroughSubject alloc] init];
-        _isConnected = NO;
+        _urlSession = [NSURLSession sharedSession];
     }
     return self;
 }
 
-- (void)connectToWebSocketUrl:(NSString *)webSocketUrl {
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:webSocketUrl] cachePolicy:NSURLRequestUseProtocolCachePolicy timeoutInterval:10];
-    self.socket = [[WebSocket alloc] initWithRequest:request];
-    self.socket.delegate = self;
-    [self.socket connect];
-    [self.socket writeString:@"test"];
-    NSLog(@"testingg");
-}
-
-- (void)didReceiveEvent:(WebSocketEvent *)event client:(id<WebSocketClient>)client {
-    switch (event.type) {
-        case WebSocketEventTypeConnected: {
-            NSDictionary *headers = event.headers;
+- (void)connectToURL:(NSURL *)url {
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    self.webSocketTask = [self.urlSession webSocketTaskWithRequest:request];
+    
+    // Start the connection
+    [self.webSocketTask resume];
+    
+    // Attempt to receive a message to confirm the connection
+    [self receiveMessage];
+    
+    // Send a ping to check if the connection is alive
+    [self.webSocketTask sendMessage:[NSURLSessionWebSocketTaskMessage messageWithString:@"ping"] completionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            self.isConnected = NO;
+            [self.delegate webSocketClientDidReceiveError:error];
+        } else {
             self.isConnected = YES;
-            [self.connectionStatusPublisher send:@(self.isConnected)];
-            NSLog(@"-- Websocket is connected: %@", headers);
-            break;
+            [self.delegate webSocketClientDidConnect];
         }
-        case WebSocketEventTypeDisconnected: {
-            NSString *reason = event.reason;
-            NSInteger code = event.code;
-            self.isConnected = NO;
-            [self.connectionStatusPublisher send:@(self.isConnected)];
-            NSLog(@"-- Websocket is disconnected: %@ with code: %ld", reason, (long)code);
-            break;
-        }
-        case WebSocketEventTypeText: {
-            NSString *string = event.text;
-            NSLog(@"-- Received text: %@", string);
-            [self.messagePublisher send:string];
-            break;
-        }
-        case WebSocketEventTypeBinary: {
-            NSData *data = event.data;
-            NSLog(@"-- Received data: %lu", (unsigned long)data.length);
-            break;
-        }
-        case WebSocketEventTypePing:
-            NSLog(@"-- Ping");
-            break;
-        case WebSocketEventTypePong:
-            NSLog(@"-- Pong");
-            break;
-        case WebSocketEventTypeViabilityChanged:
-            NSLog(@"-- Viability changed");
-            break;
-        case WebSocketEventTypeReconnectSuggested:
-            NSLog(@"-- Reconnect suggested");
-            break;
-        case WebSocketEventTypeCancelled:
-            self.isConnected = NO;
-            [self.connectionStatusPublisher send:@(self.isConnected)];
-            NSLog(@"-- Cancelled");
-            break;
-        case WebSocketEventTypeError: {
-            NSError *error = event.error;
-            self.isConnected = NO;
-            [self.connectionStatusPublisher send:@(self.isConnected)];
-            NSLog(@"-- Error");
-            [self handleError:error];
-            break;
-        }
-        case WebSocketEventTypePeerClosed:
-            NSLog(@"-- Peer closed");
-            break;
-    }
+    }];
 }
 
-- (void)handleError:(NSError *)error {
-    if ([error isKindOfClass:[WSError class]]) {
-        WSError *wsError = (WSError *)error;
-        NSLog(@"websocket encountered an error: %@", wsError.message);
-    } else {
-        NSLog(@"websocket encountered an error: %@", error.localizedDescription);
-    }
+
+- (void)receiveMessage {
+    [self.webSocketTask receiveMessageWithCompletionHandler:^(NSURLSessionWebSocketTaskMessage * _Nullable message, NSError * _Nullable error) {
+        if (error) {
+            [self.delegate webSocketClientDidReceiveError:error];
+            return;
+        }
+        
+        if (message.type == NSURLSessionWebSocketTaskMessageTypeText) {
+            NSString *text = message.text;
+            [self.delegate webSocketClientDidReceiveMessage:text];
+        }
+        
+        [self receiveMessage];  // Keep receiving messages
+    }];
 }
 
-- (void)send:(id)value onSuccess:(void (^)(void))onSuccess {
-    if (![NSJSONSerialization isValidJSONObject:value]) {
-        NSLog(@"[WEBSOCKET] Value is not a valid JSON object.\n %@", value);
-        return;
-    }
-    
-    NSError *error = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:value options:0 error:&error];
-    
-    if (error) {
-        NSLog(@"[WEBSOCKET] Error serializing JSON:\n%@", error);
-    } else {
-        [self.socket writeData:data completion:^{
-            onSuccess();
-        }];
-    }
+- (void)send:(NSString *)message {
+    NSURLSessionWebSocketTaskMessage *webSocketMessage = [NSURLSessionWebSocketTaskMessage messageWithString:message];
+    [self.webSocketTask sendMessage:webSocketMessage completionHandler:^(NSError * _Nullable error) {
+        if (error) {
+            [self.delegate webSocketClientDidReceiveError:error];
+        }
+    }];
+}
+
+- (void)disconnect {
+    [self.webSocketTask cancelWithCloseCode:NSURLSessionWebSocketCloseCodeNormal];
+    self.isConnected = NO;
+    [self.delegate webSocketClientDidDisconnectWithReason:@"Disconnected"];
 }
 
 @end

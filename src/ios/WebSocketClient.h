@@ -1,12 +1,21 @@
-@interface WebSocketClient : NSObject <WebSocketDelegate>
+// WebSocketClient.h
+#import <Foundation/Foundation.h>
 
-@property (nonatomic, strong) WebSocket *socket;
-@property (nonatomic, assign) BOOL isConnected;
-@property (nonatomic, strong) PassthroughSubject<NSNumber *, Never *> *connectionStatusPublisher;
-@property (nonatomic, strong) PassthroughSubject<NSString *, Never *> *messagePublisher;
+@protocol WebSocketClientDelegate <NSObject>
+- (void)webSocketClientDidConnect;
+- (void)webSocketClientDidDisconnectWithReason:(NSString *)reason;
+- (void)webSocketClientDidReceiveMessage:(NSString *)message;
+- (void)webSocketClientDidReceiveError:(NSError *)error;
+@end
 
-- (void)connectToWebSocketUrl:(NSString *)webSocketUrl;
-- (void)send:(id)value onSuccess:(void (^)(void))onSuccess;
-- (void)handleError:(NSError *)error;
+@interface WebSocketClient : NSObject
+
+@property (nonatomic, weak) id<WebSocketClientDelegate> delegate;
+@property (nonatomic, assign, readonly) BOOL isConnected;
+
+- (instancetype)init;
+- (void)connectToURL:(NSURL *)url;
+- (void)send:(NSString *)message;
+- (void)disconnect;
 
 @end

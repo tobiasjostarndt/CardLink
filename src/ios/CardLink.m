@@ -7,7 +7,7 @@
     NSString* wssURL = [command.arguments objectAtIndex:0];
 
     if (wssURL != nil && [wssURL length] > 0) {
-        [self.webSocketClientManager connectTo:url];
+        [self.webSocketClientManager connectToURL:wssURL];
     
         if (self.webSocketClientManager.isConnected) {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"true"];
