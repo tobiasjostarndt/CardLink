@@ -1,5 +1,5 @@
 #import <Cordova/CDV.h>
-#import "WebSocketClientManager.m"
+#import "WebSocketClientManager.h"
 
 @interface CardLink : CDVPlugin {
 }

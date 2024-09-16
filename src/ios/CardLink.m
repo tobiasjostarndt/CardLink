@@ -1,4 +1,3 @@
-#import "WebSocketClientManager.m"
 #import "CardLink.h"
 
 @implementation CardLink
@@ -11,7 +10,7 @@
         [self.webSocketClientManager connectTo:url];
     
         if (self.webSocketClientManager.isConnected) {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:"true"];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"true"];
         } else {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
@@ -23,16 +22,3 @@
 }
 
 @end
-
-
-- (BOOL)connectToWebSocket:(NSString *)url {
-    self.webSocketUrl = url;
-    [self.webSocketClientManager connectTo:url];
-    
-    if (self.webSocketClientManager.isConnected) {
-        self.isShowingPopup = NO;
-        return YES;
-    } else {
-        return NO;
-    }
-}
