@@ -22,5 +22,8 @@
 
         <header-file src="src/ios/CardLink.h" />
         <source-file src="src/ios/CardLink.m" />
+        <source-file src="src/ios/WebSocketClient.m" />
+        <source-file src="src/ios/WebSocketClientManager.m" />
+        
     </platform>
 </plugin>
