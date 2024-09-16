@@ -1,13 +1,29 @@
-#import "CardLink.h"
+#import <Cordova/CDV.h>
+#import "WebSocket/WebSocketClientManager.m"
+
+@interface CardLink : CDVPlugin {
+}
+
+@property (nonatomic, strong) WebSocketClientManager *webSocketClientManager;
+
+- (void)establishWSS:(CDVInvokedUrlCommand*)command;
+
+@end
 
 @implementation CardLink
 
-- (void)cardlink:(CDVInvokedUrlCommand*)command{
+- (void)establishWSS:(CDVInvokedUrlCommand*)command{
     CDVPluginResult* pluginResult = nil;
-    NSString* echo = [command.arguments objectAtIndex:0];
+    NSString* wssURL = [command.arguments objectAtIndex:0];
 
-    if (echo != nil && [echo length] > 0) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
+    if (wssURL != nil && [wssURL length] > 0) {
+        [self.webSocketClientManager connectTo:url];
+    
+        if (self.webSocketClientManager.isConnected) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:"true"];
+        } else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+        }
     } else {
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
     }
@@ -16,3 +32,16 @@
 }
 
 @end
+
+
+- (BOOL)connectToWebSocket:(NSString *)url {
+    self.webSocketUrl = url;
+    [self.webSocketClientManager connectTo:url];
+    
+    if (self.webSocketClientManager.isConnected) {
+        self.isShowingPopup = NO;
+        return YES;
+    } else {
+        return NO;
+    }
+}
