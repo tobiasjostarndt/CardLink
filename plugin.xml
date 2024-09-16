@@ -22,7 +22,9 @@
 
         <header-file src="src/ios/CardLink.h" />
         <source-file src="src/ios/CardLink.m" />
+        <header-file src="src/ios/WebSocketClient.h" />
         <source-file src="src/ios/WebSocketClient.m" />
+        <header-file src="src/ios/WebSocketClientManager.h" />
         <source-file src="src/ios/WebSocketClientManager.m" />
         
     </platform>
