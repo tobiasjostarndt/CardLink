@@ -20,9 +20,11 @@
             </feature>
         </config-file>
 
-        <header-file src="src/ios/CardLink.swift" />
-        <header-file src="src/ios/WebSocketClient.swift" />
-        <header-file src="src/ios/WebSocketClientManager.swift" />
-        
+        <framework src="Foundation.framework" />
+        <preference name="UseSwiftLanguageVersion" value="5" />
+
+        <source-file src="src/ios/CardLink.swift" />
+        <source-file src="src/ios/WebSocketClient.swift" />
+        <source-file src="src/ios/WebSocketClientManager.swift" />
     </platform>
 </plugin>
