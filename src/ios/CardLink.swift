@@ -11,14 +11,16 @@ import WebSocketClientManager // Füge den richtigen Importnamen für deine WebS
         // Überprüfen, ob der erste Parameter eine gültige URL ist
         if let wssURL = command.arguments.first as? String, !wssURL.isEmpty {
             // Verbindung mit der URL herstellen
-            self.webSocketClientManager.connectToURL(wssURL)
+            //self.webSocketClientManager.connectToURL(wssURL)
             
             // Überprüfen, ob die Verbindung erfolgreich hergestellt wurde
-            if self.webSocketClientManager.isConnected {
-                pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
-            } else {
-                pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
-            }
+            //if self.webSocketClientManager.isConnected {
+                //pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+            //} else {
+                //pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            //}
+
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: wssURL)
         } else {
             pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
         }
