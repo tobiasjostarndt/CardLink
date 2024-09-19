@@ -22,7 +22,7 @@
 
         <!-- CocoaPods Spezifikation -->
         <pods use-frameworks="true">
-            <pod name="Starscream", version="~> 4.0.0" />
+            <pod name="Starscream" version="~> 4.0.0" />
         </pods>
 
         <framework src="Foundation.framework" />
