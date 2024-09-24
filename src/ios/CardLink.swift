@@ -20,7 +20,7 @@
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 
-    @objc(isConnected:)
+    @objc(isConnectedWSS:)
     func isConnectedWSS(command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult? = nil
 
@@ -34,7 +34,7 @@
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 
-    @objc(isConnected:)
+    @objc(sendRequestSMSCodeMessage:)
     func sendRequestSMSCodeMessage(command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult? = nil
 
