@@ -11,6 +11,12 @@ var CardLink = {
     },
     sendRequestSMSCodeMessage: function(arg0, cb){
         exec(cb, null, PLUGIN_NAME, 'sendRequestSMSCodeMessage', [arg0]);
+    },
+    verifyCode: function(arg0, cb){
+        exec(cb, null, PLUGIN_NAME, 'verifyCode', [arg0]);
+    },
+    isSMSCodeCorrect: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'isSMSCodeCorrect', []);
     }
 };
 

@@ -2,6 +2,7 @@
     
     // Verwende lazy var, um die Instanz beim ersten Zugriff zu erstellen
     private lazy var webSocketClientManager = WebSocketClientManager()
+    private lazy var isCodeCorrect = false
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -76,5 +77,88 @@
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+
+    @objc(verifyCode:)
+    func verifyCode(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if let code = command.arguments.first as? String, !code.isEmpty {
+            let payloadDict = ["smsCode": code]
+
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: payloadDict, options: [])
+                let base64Encoded = jsonData.base64EncodedString()
+
+                let confirmSMSCodeMessage = """
+                [
+                    {
+                        "type": "confirmSMSCode",
+                        "payload": "\(base64Encoded)"
+                    },
+                    "\(webSocketClientManager.cardSessionId!)"
+                ]
+                """
+
+                webSocketClientManager.send(confirmSMSCodeMessage) {
+                    print("SUCCESSFULLY SENT CONFIRMSMSCODE MESSAGE")
+
+                    // Hier wird der Observer hinzugefügt, um die Antwort zu empfangen
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleNotification(_:)),
+                        name: .confirmSMSCodeResponse,
+                        object: nil
+                    )
+                }
+
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+            } catch {
+                print("Failed to serialize JSON: \(error)")
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            }
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+        }
+
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+
+    @objc(isSMSCodeCorrect:)
+    func isSMSCodeCorrect(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if self.isCodeCorrect {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
+        }
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+
+    // Diese Methode wird aufgerufen, wenn eine Benachrichtigung empfangen wird
+    @objc func handleNotification(_ notification: Notification) {
+        print("NOW HANDLE NOTIFICATION")
+        
+        if let info = notification.object as? [String: String],
+        let payload = info["payload"] {
+            handleVerificationResponse(payload)
+        }
+    }
+
+    @objc func handleVerificationResponse(_ payload: String) {
+        if let data = Data(base64Encoded: payload),
+           let payloadString = String(data: data, encoding: .utf8),
+           let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
+           let verificationResult = payloadJson["result"] as? String {
+            if verificationResult == "SUCCESS" {
+                isCodeCorrect = true
+            } else if verificationResult == "FAILURE" {
+                isCodeCorrect = false
+            }
+        }
     }
 }
