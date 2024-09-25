@@ -2,6 +2,7 @@
     
     // Verwende lazy var, um die Instanz beim ersten Zugriff zu erstellen
     private lazy var webSocketClientManager = WebSocketClientManager()
+    private lazy var cardReaderManager = CardReaderManager()
     private lazy var isCodeCorrect = false
     private lazy var canNumber = ""
     
@@ -159,7 +160,15 @@
     func startReadCard(command: CDVInvokedUrlCommand) {
         var pluginResult: CDVPluginResult? = nil
 
-        pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "NOW READ THE CARD!!!!")
+        Task {
+            do {
+                _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+            } catch {
+                print("[ERROR] Failed to scan card: \(error)")
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            }
+        }
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
