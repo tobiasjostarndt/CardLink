@@ -5,6 +5,8 @@
     private lazy var cardReaderManager = CardReaderManager()
     private lazy var isCodeCorrect = false
     private lazy var canNumber = ""
+    private lazy var correlationId = ""
+    private lazy var cardScanned = false
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -162,6 +164,41 @@
 
         Task {
             do {
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleEgkDataReceived(_:)),
+                    name: .egkDataReceived,
+                    object: nil
+                )
+
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedFirstSendAPDU(_:)),
+                    name: .receivedFirstSendAPDU,
+                    object: nil
+                )
+
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedSecondSendAPDU(_:)),
+                    name: .receivedSecondSendAPDU,
+                    object: nil
+                )
+
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedFirstSendAPDUResponse(_:)),
+                    name: .receivedFirstSendAPDUResponse,
+                    object: nil
+                )
+
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedSecondSendAPDUResponse(_:)),
+                    name: .receivedSecondSendAPDUResponse,
+                    object: nil
+                )
+
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
                 pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
             } catch {
@@ -173,24 +210,152 @@
         // Das Ergebnis an den Cordova-Callback zurückgeben
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
+    
+    @objc(isCardScanned:)
+    func isCardScanned(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if self.cardScanned {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
+        }
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
 
     // Diese Methode wird aufgerufen, wenn eine Benachrichtigung empfangen wird
     @objc func handleConfirmSMSCodeResponse(_ notification: Notification) {
         if let info = notification.object as? [String: String],
         let payload = info["payload"] {
-            handleVerificationResponse(payload)
+            if let data = Data(base64Encoded: payload),
+            let payloadString = String(data: data, encoding: .utf8),
+            let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
+            let verificationResult = payloadJson["result"] as? String {
+                if verificationResult == "SUCCESS" {
+                    isCodeCorrect = true
+                } else if verificationResult == "FAILURE" {
+                    isCodeCorrect = false
+                }
+            }
         }
     }
 
-    @objc func handleVerificationResponse(_ payload: String) {
-        if let data = Data(base64Encoded: payload),
-           let payloadString = String(data: data, encoding: .utf8),
-           let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
-           let verificationResult = payloadJson["result"] as? String {
-            if verificationResult == "SUCCESS" {
-                isCodeCorrect = true
-            } else if verificationResult == "FAILURE" {
-                isCodeCorrect = false
+    @objc func handleEgkDataReceived(_ notification: Notification){
+        if let cardData = notification.object as? Data {
+            let base64Encoded = cardData.base64EncodedString()
+            
+            let newUUID = "APPDINX_\(UUID().uuidString)"
+            let registerEgkMessage = """
+            [
+                {
+                    "type": "registerEGK",
+                    "payload": "\(base64Encoded)"
+                },
+                "\(webSocketClientManager.cardSessionId!)",
+                "\(newUUID)"
+            ]
+            """
+            
+            print(registerEgkMessage)
+            webSocketClientManager.send(registerEgkMessage) {
+                print("SUCCESSFULLY SENT REGISTEREGK MESSAGE")
+            }
+        }
+    }
+
+    @objc func handleReceivedFirstSendAPDU(_ notification: Notification){
+        if let info = notification.object as? [String: String],
+            let payload = info["payload"],
+            let receivedCorrelationId = info["correlationId"] {
+            self.correlationId = receivedCorrelationId
+            print("Payload from sendAPDU message: \(payload)")
+            print("CorrelationID from sendAPDU message: \(self.correlationId)")
+            
+            if let data = Data(base64Encoded: payload),
+                let payloadString = String(data: data, encoding: .utf8) {
+                if let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
+                    let cardSessionId = payloadJson["cardSessionId"] as? String,
+                    let apdu = payloadJson["apdu"] as? String {
+                    
+                    let apduCommand: [String: Any] = ["payload": apdu]
+                    NotificationCenter.default.post(name: .sendFirstSendAPDUCommandReceived, object: apduCommand)
+                } else {
+                    print("Failed to parse the payload JSON.")
+                }
+            } else {
+                print("Failed to decode the base64 payload.")
+            }
+        } else {
+            print("Failed to extract payload and correlationId from notification.")
+        }
+    }
+
+    @objc func handleReceivedSecondSendAPDU(_ notification: Notification){
+        if let info = notification.object as? [String: String],
+            let payload = info["payload"],
+            let receivedCorrelationId = info["correlationId"] {
+            self.correlationId = receivedCorrelationId
+            
+            if let data = Data(base64Encoded: payload),
+                let payloadString = String(data: data, encoding: .utf8) {
+                if let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
+                    let cardSessionId = payloadJson["cardSessionId"] as? String,
+                    let apdu = payloadJson["apdu"] as? String {
+                    
+                    let apduCommand: [String: Any] = ["payload": apdu]
+                    NotificationCenter.default.post(name: .sendSecondSendAPDUCommandReceived, object: apduCommand)
+                } else {
+                    print("Failed to parse the payload JSON.")
+                }
+            } else {
+                print("Failed to decode the base64 payload.")
+            }
+        } else {
+            print("Failed to extract payload and correlationId from notification.")
+        }
+    }
+
+    @objc func handleReceivedFirstSendAPDUResponse(_ notification: Notification){
+        if let firstSendAPDUResponseData = notification.object as? Data {
+            let base64Encoded = firstSendAPDUResponseData.base64EncodedString()
+            let sendApduResponseMessage = """
+            [
+                {
+                    "type": "sendAPDUResponse",
+                    "payload": "\(base64Encoded)"
+                },
+                "\(webSocketClientManager.cardSessionId!)",
+                "\(self.correlationId)"
+            ]
+            """
+            
+            print(sendApduResponseMessage)
+            webSocketClientManager.send(sendApduResponseMessage) {
+                print("SUCCESSFULLY SENT SENDAPDURESPONSE MESSAGE")
+            }
+        }
+    }
+    
+    @objc func handleReceivedSecondSendAPDUResponse(_ notification: Notification){
+        if let secondSendAPDUResponseData = notification.object as? Data {
+            let base64Encoded = secondSendAPDUResponseData.base64EncodedString()
+            let sendApduResponseMessage = """
+                        [
+                            {
+                                "type": "sendAPDUResponse",
+                                "payload": "\(base64Encoded)"
+                            },
+                            "\(webSocketClientManager.cardSessionId!)",
+                            "\(self.correlationId)"
+                        ]
+                        """
+            
+            print(sendApduResponseMessage)
+            webSocketClientManager.send(sendApduResponseMessage) {
+                print("SUCCESSFULLY SENT SENDAPDURESPONSE MESSAGE")
+                self.cardScanned = true
             }
         }
     }

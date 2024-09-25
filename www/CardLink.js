@@ -23,6 +23,9 @@ var CardLink = {
     },
     startReadCard: function(cb){
         exec(cb, null, PLUGIN_NAME, 'startReadCard', []);
+    },
+    isCardScanned: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'isCardScanned', []);
     }
 };
 
