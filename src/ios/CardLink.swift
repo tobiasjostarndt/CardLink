@@ -3,6 +3,7 @@
     // Verwende lazy var, um die Instanz beim ersten Zugriff zu erstellen
     private lazy var webSocketClientManager = WebSocketClientManager()
     private lazy var isCodeCorrect = false
+    private lazy var canNumber = ""
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -40,7 +41,7 @@
         var pluginResult: CDVPluginResult? = nil
 
         if let phoneNumber = command.arguments.first as? String, !phoneNumber.isEmpty {
-             webSocketClientManager.cardSessionId = UUID().uuidString
+             webSocketClientManager.cardSessionId = "APPDINX_\(UUID().uuidString)"
         
             let payloadDict: [String: String] = [
                 "senderId": "cardlink",
@@ -106,7 +107,7 @@
                     // Hier wird der Observer hinzugefügt, um die Antwort zu empfangen
                     NotificationCenter.default.addObserver(
                         self,
-                        selector: #selector(self.handleNotification(_:)),
+                        selector: #selector(self.handleConfirmSMSCodeResponse(_:)),
                         name: .confirmSMSCodeResponse,
                         object: nil
                     )
@@ -139,10 +140,33 @@
         self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
 
-    // Diese Methode wird aufgerufen, wenn eine Benachrichtigung empfangen wird
-    @objc func handleNotification(_ notification: Notification) {
-        print("NOW HANDLE NOTIFICATION")
+    @objc(setCanNumber:)
+    func setCanNumber(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if let canNumber = command.arguments.first as? String, !canNumber.isEmpty {
+            self.canNumber = canNumber;
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+        }
         
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+
+    @objc(startReadCard:)
+    func startReadCard(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "NOW READ THE CARD!!!!")
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+
+    // Diese Methode wird aufgerufen, wenn eine Benachrichtigung empfangen wird
+    @objc func handleConfirmSMSCodeResponse(_ notification: Notification) {
         if let info = notification.object as? [String: String],
         let payload = info["payload"] {
             handleVerificationResponse(payload)

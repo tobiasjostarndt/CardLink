@@ -17,6 +17,12 @@ var CardLink = {
     },
     isSMSCodeCorrect: function(cb){
         exec(cb, null, PLUGIN_NAME, 'isSMSCodeCorrect', []);
+    },
+    setCanNumber: function(arg0, cb){
+        exec(cb, null, PLUGIN_NAME, 'setCanNumber', [arg0]);
+    },
+    startReadCard: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'startReadCard', []);
     }
 };
 
