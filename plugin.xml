@@ -32,5 +32,11 @@
         <source-file src="src/ios/CardLink.swift" />
         <source-file src="src/ios/WebSocketClient.swift" />
         <source-file src="src/ios/WebSocketClientManager.swift" />
+        <source-file src="src/ios/CardReaderManager.swift" />
+        <source-file src="src/ios/Message.swift" />
+        <source-file src="src/ios/NFCScannerController.swift" />
+        <source-file src="src/ios/ScannerController.swift" />
+        <source-file src="src/ios/ScannerEnvironmentExtensions.swift" />
+        <source-file src="src/ios/ViewState.swift" />
     </platform>
 </plugin>
