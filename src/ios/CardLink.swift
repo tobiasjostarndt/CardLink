@@ -216,15 +216,10 @@
                 )
 
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
-                pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
             } catch {
                 print("[ERROR] Failed to scan card: \(error)")
-                pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
             }
         }
-        
-        // Das Ergebnis an den Cordova-Callback zurückgeben
-        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc(isCardScanned:)
