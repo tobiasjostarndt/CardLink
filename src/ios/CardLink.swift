@@ -7,6 +7,8 @@
     private lazy var canNumber = ""
     private lazy var correlationId = ""
     private lazy var cardScanned = false
+    private lazy var eRezeptTokensFromAVS = ""
+    private lazy var eRezeptBundlesFromAVS = ""
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -198,6 +200,20 @@
                     name: .receivedSecondSendAPDUResponse,
                     object: nil
                 )
+                
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedERezeptTokensFromAVS(_:)),
+                    name: .receivedERezeptTokensFromAVS,
+                    object: nil
+                )
+                
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleReceivedERezeptBundlesFromAVS(_:)),
+                    name: .receivedERezeptBundlesFromAVS,
+                    object: nil
+                )
 
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
                 pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
@@ -219,6 +235,34 @@
             pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
         } else {
             pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
+        }
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+    
+    @objc(getERezeptTokensFromAVS:)
+    func getERezeptTokensFromAVS(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if self.cardScanned && self.eRezeptTokensFromAVS != "" {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: self.eRezeptTokensFromAVS)
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+        }
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
+    
+    @objc(getERezeptBundlesFromAVS:)
+    func getERezeptBundlesFromAVS(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+
+        if self.cardScanned && self.eRezeptBundlesFromAVS != "" {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: self.eRezeptBundlesFromAVS)
+        } else {
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
         }
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
@@ -356,6 +400,70 @@
             webSocketClientManager.send(sendApduResponseMessage) {
                 print("SUCCESSFULLY SENT SENDAPDURESPONSE MESSAGE")
                 self.cardScanned = true
+            }
+        }
+    }
+    
+    @objc func handleReceivedERezeptTokensFromAVS(_ notification: Notification){
+        if let objectReceived = notification.object as? [String: Any],
+           let base64Payload = objectReceived["payload"] as? String {
+            
+            if let data = Data(base64Encoded: base64Payload),
+               let jsonString = String(data: data, encoding: .utf8),
+               let jsonData = jsonString.data(using: .utf8) {
+                self.eRezeptTokensFromAVS = jsonString
+                /*do {
+                    if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
+                       let tokens = jsonObject["tokens"] as? String {
+                        print("Tokens content: \(tokens)")
+                        prescriptions = TokensParser.parseXmlPrescriptions(xmlString: tokens)
+                        
+                    } else {
+                        print("Failed to extract tokens")
+                    }
+                } catch {
+                    print("Error parsing JSON: \(error)")
+                }*/
+            } else {
+                print("Failed to convert jsonString to Data")
+            }
+        }
+    }
+    
+    @objc func handleReceivedERezeptBundlesFromAVS(_ notification: Notification){
+        if let objectReceived = notification.object as? [String: Any],
+           let base64Payload = objectReceived["payload"] as? String {
+            
+            if let data = Data(base64Encoded: base64Payload),
+               let jsonString = String(data: data, encoding: .utf8),
+               let jsonData = jsonString.data(using: .utf8) {
+                self.eRezeptBundlesFromAVS = jsonString
+                /*do {
+                    if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
+                       let bundlesArray = jsonObject["bundles"] as? [String] {
+                        
+                        for bundleString in bundlesArray {
+                            
+                            if let bundle = parseXmlBundle(xmlString: bundleString) {
+                                bundles.append(bundle)
+                                
+                                print("Medication Name: \(bundle.medicationName ?? "")")
+                                print("PZN: \(bundle.medicationCode ?? "")")
+                                print("Prescription ID: \(bundle.prescriptionId ?? "")")
+                                print("---")
+                            } else {
+                                print("Error parsing XML bundle: \(bundleString)")
+                            }
+                        }
+                        
+                    } else {
+                        print("Failed to extract bundles")
+                    }
+                } catch {
+                    print("Error parsing JSON: \(error)")
+                }*/
+            } else {
+                print("Failed to convert jsonString to Data")
             }
         }
     }

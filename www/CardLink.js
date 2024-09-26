@@ -26,6 +26,12 @@ var CardLink = {
     },
     isCardScanned: function(cb){
         exec(cb, null, PLUGIN_NAME, 'isCardScanned', []);
+    },
+    getERezeptTokensFromAVS: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'getERezeptTokensFromAVS', []);
+    },
+    getERezeptBundlesFromAVS: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'getERezeptBundlesFromAVS', []);
     }
 };
 
