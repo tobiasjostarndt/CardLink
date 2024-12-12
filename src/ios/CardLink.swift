@@ -9,6 +9,7 @@
     private lazy var cardScanned = false
     private lazy var eRezeptTokensFromAVS = ""
     private lazy var eRezeptBundlesFromAVS = ""
+    private lazy var cardSessionID = ""
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -46,11 +47,12 @@
         var pluginResult: CDVPluginResult? = nil
 
         if let phoneNumber = command.arguments.first as? String, !phoneNumber.isEmpty {
-             webSocketClientManager.cardSessionId = "APPDINX_\(UUID().uuidString)"
+            cardSessionID = String(Int(Date().timeIntervalSince1970))
+            webSocketClientManager.cardSessionId = "\(cardSessionID)-\(UUID().uuidString)"
         
             let payloadDict: [String: String] = [
                 "senderId": "cardlink",
-                "textTemplate": "Bitte geben Sie in der CardLink App folgenden Code ein: {0}",
+                "textTemplate": "Bitte geben Sie in der Appdinx App folgenden Code ein: {0}",
                 "phoneNumber": phoneNumber,
                 "textReassignmentTemplate": "Ihre Gesundheitskarte {0} wurde der Telefonnummer {1} neu zugeordnet. Wenn Sie diese Telefonnummer kennen, ist alles in Ordnung. Wenn Ihre Karte gestohlen wurde, lassen Sie diese bitte von Ihrer Versicherung sperren."
             ]
@@ -216,10 +218,15 @@
                 )
 
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
             } catch {
                 print("[ERROR] Failed to scan card: \(error)")
+                pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
             }
         }
+        
+        // Das Ergebnis an den Cordova-Callback zurückgeben
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc(isCardScanned:)
@@ -285,7 +292,8 @@
         if let cardData = notification.object as? Data {
             let base64Encoded = cardData.base64EncodedString()
             
-            let newUUID = "APPDINX_\(UUID().uuidString)"
+            let newUUID = "\(cardSessionID)-\(UUID().uuidString)"
+            
             let registerEgkMessage = """
             [
                 {
@@ -400,65 +408,29 @@
     }
     
     @objc func handleReceivedERezeptTokensFromAVS(_ notification: Notification){
-        if let objectReceived = notification.object as? [String: Any],
-           let base64Payload = objectReceived["payload"] as? String {
-            
-            if let data = Data(base64Encoded: base64Payload),
-               let jsonString = String(data: data, encoding: .utf8),
-               let jsonData = jsonString.data(using: .utf8) {
-                self.eRezeptTokensFromAVS = jsonString
-                /*do {
-                    if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
-                       let tokens = jsonObject["tokens"] as? String {
-                        print("Tokens content: \(tokens)")
-                        prescriptions = TokensParser.parseXmlPrescriptions(xmlString: tokens)
-                        
-                    } else {
-                        print("Failed to extract tokens")
-                    }
-                } catch {
-                    print("Error parsing JSON: \(error)")
-                }*/
-            } else {
-                print("Failed to convert jsonString to Data")
+        if let objectReceived = notification.object as? [String: Any] {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: objectReceived, options: [])
+
+                if let jsonString = String(data: jsonData, encoding: .utf8) {
+                    self.eRezeptTokensFromAVS = jsonString
+                }
+            } catch {
+                print("Fehler beim Konvertieren des Dictionaries zu einem String: \(error.localizedDescription)")
             }
         }
     }
     
     @objc func handleReceivedERezeptBundlesFromAVS(_ notification: Notification){
-        if let objectReceived = notification.object as? [String: Any],
-           let base64Payload = objectReceived["payload"] as? String {
-            
-            if let data = Data(base64Encoded: base64Payload),
-               let jsonString = String(data: data, encoding: .utf8),
-               let jsonData = jsonString.data(using: .utf8) {
-                self.eRezeptBundlesFromAVS = jsonString
-                /*do {
-                    if let jsonObject = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
-                       let bundlesArray = jsonObject["bundles"] as? [String] {
-                        
-                        for bundleString in bundlesArray {
-                            
-                            if let bundle = parseXmlBundle(xmlString: bundleString) {
-                                bundles.append(bundle)
-                                
-                                print("Medication Name: \(bundle.medicationName ?? "")")
-                                print("PZN: \(bundle.medicationCode ?? "")")
-                                print("Prescription ID: \(bundle.prescriptionId ?? "")")
-                                print("---")
-                            } else {
-                                print("Error parsing XML bundle: \(bundleString)")
-                            }
-                        }
-                        
-                    } else {
-                        print("Failed to extract bundles")
-                    }
-                } catch {
-                    print("Error parsing JSON: \(error)")
-                }*/
-            } else {
-                print("Failed to convert jsonString to Data")
+        if let objectReceived = notification.object as? [String: Any] {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: objectReceived, options: [])
+
+                if let jsonString = String(data: jsonData, encoding: .utf8) {
+                    self.eRezeptBundlesFromAVS = jsonString
+                }
+            } catch {
+                print("Fehler beim Konvertieren des Dictionaries zu einem String: \(error.localizedDescription)")
             }
         }
     }
