@@ -86,14 +86,5 @@
         <source-file src="src/android/service/ConnectionService.java" target-dir="src/com/appdinx/cardlink/service" />
 
         <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
-
-        <!-- Gradle Dependencies -->
-        <config-file target="app/build.gradle" parent="/dependencies"> <!-- Correct path to build.gradle -->
-            <dependency>
-                <groupId>androidx.core</groupId>
-                <artifactId>core-ktx</artifactId>
-                <version>1.7.0</version>
-            </dependency>
-        </config-file>
     </platform>
 </plugin>
