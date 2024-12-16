@@ -20,11 +20,6 @@
             </feature>
         </config-file>
 
-        <!-- CocoaPods Specification -->
-        <pods use-frameworks="true">
-            <pod name="Starscream" spec="~> 4.0.0" /> <!-- Updated to use 'spec' for compatibility -->
-        </pods>
-
         <framework src="Foundation.framework" />
         <preference name="UseSwiftLanguageVersion" value="5" />
 
@@ -48,21 +43,49 @@
             </feature>
         </config-file>
 
-        <!-- Android Permissions -->
-        <config-file target="AndroidManifest.xml" parent="/manifest">
-            <uses-permission android:name="android.permission.NFC" />
-            <uses-permission android:name="android.permission.INTERNET" />
-        </config-file>
-
         <!-- Android Dependencies -->
         <framework src="androidx.appcompat:appcompat:1.4.0" />
         <framework src="androidx.constraintlayout:constraintlayout:2.1.0" />
         <framework src="com.squareup.okhttp3:okhttp:4.9.1" />
         <framework src="com.github.nkzawa:socket.io-client:0.6.0" />
 
-        <!-- Android Source Files -->
+        <!-- Java Source Files -->
         <source-file src="src/android/CardLink.java" target-dir="src/com/appdinx/cardlink" />
         <source-file src="src/android/CardLinkStart.java" target-dir="src/com/appdinx/cardlink" />
+
+        <source-file src="src/android/activities/task/FetchPrescriptions.java" target-dir="src/com/appdinx/cardlink/activities/task" />
+        <source-file src="src/android/activities/CanInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
+        <source-file src="src/android/activities/CardInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
+        <source-file src="src/android/activities/PhoneInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
+        <source-file src="src/android/activities/PrescriptionRedeemActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
+        <source-file src="src/android/activities/PrescriptionRetrieveActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
+
+        <source-file src="src/android/artemis/Broker.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/Callback.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/CallbackHandler.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/CardTerminalMessage.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/Client.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/ClientManager.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/ConnectionListener.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/MqttClient.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/Topics.java" target-dir="src/com/appdinx/cardlink/artemis" />
+        <source-file src="src/android/artemis/WebSocketClient.java" target-dir="src/com/appdinx/cardlink/artemis" />
+
+        <source-file src="src/android/codec/Message.java" target-dir="src/com/appdinx/cardlink/codec" />
+
+        <source-file src="src/android/egk/APDUTiming.java" target-dir="src/com/appdinx/cardlink/egk" />
+        <source-file src="src/android/egk/CardAbsentEventSubscriber.java" target-dir="src/com/appdinx/cardlink/egk" />
+        <source-file src="src/android/egk/CardCommandHandler.java" target-dir="src/com/appdinx/cardlink/egk" />
+
+        <source-file src="src/android/exception/GlobalExceptionHandler.java" target-dir="src/com/appdinx/cardlink/exception" />
+
+        <source-file src="src/android/prescription/Prescription.java" target-dir="src/com/appdinx/cardlink/prescription" />
+        <source-file src="src/android/prescription/PrescriptionAdapter.java" target-dir="src/com/appdinx/cardlink/prescription" />
+
+        <source-file src="src/android/service/AbstractService.java" target-dir="src/com/appdinx/cardlink/service" />
+        <source-file src="src/android/service/ConnectionService.java" target-dir="src/com/appdinx/cardlink/service" />
+
+        <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
 
         <!-- Gradle Dependencies -->
         <config-file target="app/build.gradle" parent="/dependencies"> <!-- Correct path to build.gradle -->
