@@ -65,7 +65,7 @@
         <source-file src="src/android/CardLinkStart.java" target-dir="src/com/appdinx/cardlink" />
 
         <!-- Gradle Dependencies -->
-        <config-file target="app/build.gradle" parent="dependencies"> <!-- Correct path to build.gradle -->
+        <config-file target="app/build.gradle" parent="/dependencies"> <!-- Correct path to build.gradle -->
             <dependency>
                 <groupId>androidx.core</groupId>
                 <artifactId>core-ktx</artifactId>
