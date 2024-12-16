@@ -233,7 +233,7 @@ public class NFCScannerController: ScannerController {
                 }
             }
             
-            session.updateAlert(message: NSLocalizedString("Success", comment: ""))
+            session.updateAlert(message: NSLocalizedString("Erfolgreich", comment: ""))
             return jsonData
         })
         else {

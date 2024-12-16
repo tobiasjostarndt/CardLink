@@ -43,11 +43,33 @@
             </feature>
         </config-file>
 
+        <config-file target="AndroidManifest.xml" parent="application">
+            <service android:name="com.appdinx.cardlink.service.ConnectionService" />
+            <service android:name="com.appdinx.cardlink.CardLinkService" />
+        </config-file>
+
         <!-- Android Dependencies -->
-        <framework src="androidx.appcompat:appcompat:1.4.0" />
         <framework src="androidx.constraintlayout:constraintlayout:2.1.0" />
         <framework src="com.squareup.okhttp3:okhttp:4.9.1" />
         <framework src="com.github.nkzawa:socket.io-client:0.6.0" />
+
+        <framework src="com.google.android.material:material:1.9.0" />
+        <framework src="androidx.appcompat:appcompat:1.6.1" />
+        <framework src="de.gematik.ti:healthcard.control.common:1.0.0" />
+        <framework src="de.gematik.ti:healthcard.access:1.2.2" />
+        <framework src="de.gematik.ti:cardreader.provider.nfc:1.1.2" />
+        <framework src="org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0" />
+        <framework src="org.eclipse.paho:org.eclipse.paho.android.service:1.1.1" />
+        <framework src="androidx.localbroadcastmanager:localbroadcastmanager:1.1.0" />
+        <framework src="com.fasterxml.jackson.core:jackson-databind:2.14.2" />
+        <framework src="javax.xml.bind:jaxb-api:2.4.0-b180830.0359" />
+        <framework src="xerces:xercesImpl:2.12.0" />
+        <framework src="dev.gustavoavila:java-android-websocket-client:2.0.2" />
+        <framework src="com.gitlab.mvysny.slf4j:slf4j-handroid:2.0.4" />
+        <framework src="org.greenrobot:eventbus:3.2.0" />
+
+        <!-- Local JAR file -->
+        <source-file src="libs/asn1-runtime.jar" target-dir="libs" />
 
         <!-- Java Source Files -->
         <source-file src="src/android/CardLink.java" target-dir="src/com/appdinx/cardlink" />

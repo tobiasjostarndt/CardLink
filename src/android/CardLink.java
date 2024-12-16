@@ -2,31 +2,26 @@ package com.appdinx.cardlink;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import android.util.Base64;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
-import com.appdinx.cardlink.CardLinkStart;
-
 public class CardLink extends CordovaPlugin {
-
-    private boolean isCodeCorrect = false;
-    private String canNumber = "";
-    private String correlationId = "";
-    private boolean cardScanned = false;
-    private String eRezeptTokensFromAVS = "";
-    private String eRezeptBundlesFromAVS = "";
-    private String cardSessionID = "";
+    public static String correlationId = "";
+    public static String cardSessionID = "";
+    public static String canNumber = "";
+    public static String eRezeptTokensFromAVS = "";
+    public static String eRezeptBundlesFromAVS = "";
+    public static boolean isCodeCorrect = false;
+    public static boolean cardScanned = false;
+    public static boolean isConnectedWSS = false;
 
     // Logger tag
     private static final String TAG = "CardLink";
 
-    private CardLinkStart cls = new CardLinkStart();
-    
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         switch (action) {
@@ -70,7 +65,10 @@ public class CardLink extends CordovaPlugin {
             String wssURL = args.getString(0);
 
             if (wssURL != null && !wssURL.isEmpty()) {
-                this.cls.initializeAndStartService(wssURL);
+                Intent intent = new Intent(cordova.getActivity(), CardLinkService.class);
+                intent.putExtra("brokerUrl", wssURL); // Beispiel-URL
+                cordova.getActivity().startService(intent);
+
                 callbackContext.success("true");
             } else {
                 callbackContext.error("Invalid URL");
@@ -81,13 +79,11 @@ public class CardLink extends CordovaPlugin {
     }
     
     private void isConnectedWSS(CallbackContext callbackContext) {
-        if (this.cls.isConnectedWSS) {
+        if (isConnectedWSS) {
             callbackContext.success("true");
         } else {
             callbackContext.success("false");
         }
-
-       callbackContext.success("true");
     }
 
     private void sendRequestSMSCodeMessage(JSONArray args, CallbackContext callbackContext) {
@@ -142,7 +138,7 @@ public class CardLink extends CordovaPlugin {
 
     private void startReadCard(CallbackContext callbackContext) {
         try {
-            cardScanned = true;
+            this.cardScanned = true;
             callbackContext.success("true");
         } catch (Exception e) {
             Log.e(TAG, "Failed to start reading card", e);
