@@ -88,7 +88,7 @@
         <source-file src="src/android/egk/CardAbsentEventSubscriber.java" target-dir="src/com/appdinx/cardlink/egk" />
         <source-file src="src/android/egk/CardCommandHandler.java" target-dir="src/com/appdinx/cardlink/egk" />
 
-        <source-file src="src/android/exceotion/GlobalExceptionHandler.java" target-dir="src/com/appdinx/cardlink/exception" />
+        <source-file src="src/android/exception/GlobalExceptionHandler.java" target-dir="src/com/appdinx/cardlink/exception" />
 
         <source-file src="src/android/prescription/Prescription.java" target-dir="src/com/appdinx/cardlink/prescription" />
         <source-file src="src/android/prescription/PrescriptionAdapter.java" target-dir="src/com/appdinx/cardlink/prescription" />
