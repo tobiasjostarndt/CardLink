@@ -50,8 +50,8 @@
 
         <!-- Permissions für NFC und Internet -->
         <config-file target="AndroidManifest.xml" parent="/*">
-            <uses-permission android:name="android.permission.NFC" />
-            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission name="android.permission.NFC" />
+            <uses-permission name="android.permission.INTERNET" />
         </config-file>
 
         <!-- Android Abhängigkeiten -->
