@@ -46,6 +46,7 @@
         <config-file target="AndroidManifest.xml" parent="application">
             <service android:name="com.appdinx.cardlink.service.ConnectionService" />
             <service android:name="com.appdinx.cardlink.CardLinkService" />
+            <service android:name="com.appdinx.cardlink.CardLinkCardHandler" />
             <uses-permission android:name="android.permission.NFC" />
             <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -83,11 +84,6 @@
         <source-file src="src/android/CardLinkStart.java" target-dir="src/com/appdinx/cardlink" />
 
         <source-file src="src/android/activities/task/FetchPrescriptions.java" target-dir="src/com/appdinx/cardlink/activities/task" />
-        <source-file src="src/android/activities/CanInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
-        <source-file src="src/android/activities/CardInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
-        <source-file src="src/android/activities/PhoneInsertionActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
-        <source-file src="src/android/activities/PrescriptionRedeemActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
-        <source-file src="src/android/activities/PrescriptionRetrieveActivity.java" target-dir="src/com/appdinx/cardlink/activities" />
 
         <source-file src="src/android/artemis/Broker.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/Callback.java" target-dir="src/com/appdinx/cardlink/artemis" />
