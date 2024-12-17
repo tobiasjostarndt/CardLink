@@ -81,7 +81,8 @@
 
         <!-- Java Source Files -->
         <source-file src="src/android/CardLink.java" target-dir="src/com/appdinx/cardlink" />
-        <source-file src="src/android/CardLinkStart.java" target-dir="src/com/appdinx/cardlink" />
+        <source-file src="src/android/CardLinkService.java" target-dir="src/com/appdinx/cardlink" />
+        <source-file src="src/android/CardLinkCardHandler.java" target-dir="src/com/appdinx/cardlink" />
 
         <source-file src="src/android/activities/task/FetchPrescriptions.java" target-dir="src/com/appdinx/cardlink/activities/task" />
 
