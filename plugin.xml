@@ -21,15 +21,15 @@
         </config-file>
         
         <!-- Hinzufügen des Drittanbieter-Pakets zum Plugin -->
-        <source-file src="src/ios/Starscream" framework="true" />
-        <source-file src="src/ios/ref-OpenHealthCardKit" framework="true" />
-        <source-file src="src/ios/ref-GemCommonsKit" framework="true" />
+        <resource-file src="src/ios/Starscream" />
+        <resource-file src="src/ios/ref-OpenHealthCardKit" />
+        <resource-file src="src/ios/ref-GemCommonsKit" />
         
         <framework src="Foundation.framework" />
 
         <preference name="UseSwiftLanguageVersion" value="5" />
 
-        <edit-config target="ISO7816 application identifiers for NFC Tag Reader Session" file="*-Info.plist" mode="merge">
+        <edit-config target="com.apple.developer.nfc.readersession.iso7816.select-identifiers" file="*-Info.plist" mode="merge">
             <array>
                 <string>D2760001448000</string>
                 <string>D27600014601</string>
@@ -45,7 +45,7 @@
         </edit-config>
 
         <!-- NFCReaderUsageDescription hinzufügen -->
-        <config-file parent="NFCReaderUsageDescription" mode="merge" target="*-Info.plist">
+        <config-file target="NFCReaderUsageDescription" file="*-Info.plist" mode="merge" >
             <string>Die App verwendet NFC, um Tags zu lesen.</string>
         </config-file>
 
@@ -118,7 +118,6 @@
         <source-file src="src/android/artemis/Client.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/ClientManager.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/ConnectionListener.java" target-dir="src/com/appdinx/cardlink/artemis" />
-        <source-file src="src/android/artemis/MqttClient.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/Topics.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/WebSocketClient.java" target-dir="src/com/appdinx/cardlink/artemis" />
 
@@ -130,15 +129,10 @@
 
         <source-file src="src/android/exception/GlobalExceptionHandler.java" target-dir="src/com/appdinx/cardlink/exception" />
 
-        <source-file src="src/android/prescription/Prescription.java" target-dir="src/com/appdinx/cardlink/prescription" />
-        <source-file src="src/android/prescription/PrescriptionAdapter.java" target-dir="src/com/appdinx/cardlink/prescription" />
-
         <source-file src="src/android/service/AbstractService.java" target-dir="src/com/appdinx/cardlink/service" />
         <source-file src="src/android/service/ConnectionService.java" target-dir="src/com/appdinx/cardlink/service" />
 
         <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
         <source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" />
-
-        
     </platform>
 </plugin>
