@@ -22,9 +22,9 @@
 
         <framework src="Foundation.framework" />
         
-        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/ref-GemCommonsKit" />
-        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/ref-OpenHealthCardKit" />
-        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/Starscream" />
+        <resource-file src="src/ios/ref-GemCommonsKit" />
+        <resource-file src="src/ios/ref-OpenHealthCardKit" />
+        <resource-file src="src/ios/Starscream" />
 
         <preference name="UseSwiftLanguageVersion" value="5" />
 
