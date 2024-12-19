@@ -32,7 +32,10 @@ var CardLink = {
     },
     getERezeptBundlesFromAVS: function(cb){
         exec(cb, null, PLUGIN_NAME, 'getERezeptBundlesFromAVS', []);
-    }
+    },
+    isError: function(cb){
+        exec(cb, null, PLUGIN_NAME, 'isError', []);
+    },
 };
 
 module.exports = CardLink;
