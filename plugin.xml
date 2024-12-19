@@ -19,14 +19,39 @@
                 <param name="ios-package" value="CardLink" onload="true" />
             </feature>
         </config-file>
-
-        <framework src="Foundation.framework" />
         
         <resource-file src="src/ios/ref-GemCommonsKit" />
         <resource-file src="src/ios/ref-OpenHealthCardKit" />
         <resource-file src="src/ios/Starscream" />
 
+        <framework src="Foundation.framework" />
+
+        <framework src="Starscream.framework" />
+        <framework src="GemCommonsKit.framework" />
+        <framework src="CardReaderProviderApi.framework" />
+        <framework src="NFCCardREaderProvider.framework" />
+
         <preference name="UseSwiftLanguageVersion" value="5" />
+
+        <edit-config target="ISO7816 application identifiers for NFC Tag Reader Session" file="*-Info.plist" mode="merge">
+            <array>
+                <string>D2760001448000</string>
+                <string>D27600014601</string>
+                <string>D27600014606</string>
+                <string>D27600000102</string>
+                <string>A000000167455349474E</string>
+                <string>D27600006601</string>
+                <string>D27600014602</string>
+                <string>E828BD080FA000000167455349474E</string>
+                <string>E828BD080FD27600006601</string>
+                <string>D27600014603</string>
+            </array>
+        </edit-config>
+
+        <!-- NFCReaderUsageDescription hinzufügen -->
+        <config-file parent="NFCReaderUsageDescription" mode="merge" target="*-Info.plist">
+            <string>Die App verwendet NFC, um Tags zu lesen.</string>
+        </config-file>
 
         <!-- iOS Source Files -->
         <source-file src="src/ios/CardLink.swift" />
