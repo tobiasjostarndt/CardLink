@@ -20,16 +20,12 @@
             </feature>
         </config-file>
         
-        <resource-file src="src/ios/ref-GemCommonsKit" />
-        <resource-file src="src/ios/ref-OpenHealthCardKit" />
-        <resource-file src="src/ios/Starscream" />
-
+        <!-- Hinzufügen des Drittanbieter-Pakets zum Plugin -->
+        <source-file src="src/ios/Starscream" framework="true" />
+        <source-file src="src/ios/ref-OpenHealthCardKit" framework="true" />
+        <source-file src="src/ios/ref-GemCommonsKit" framework="true" />
+        
         <framework src="Foundation.framework" />
-
-        <framework src="Starscream" />
-        <framework src="GemCommonsKit" />
-        <framework src="CardReaderProviderApi" />
-        <framework src="NFCCardREaderProvider" />
 
         <preference name="UseSwiftLanguageVersion" value="5" />
 
