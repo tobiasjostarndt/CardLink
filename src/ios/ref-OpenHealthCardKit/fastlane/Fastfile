@@ -1,0 +1,335 @@
+#
+# ${GEMATIK_COPYRIGHT_STATEMENT}
+#
+
+fastlane_version "2.210.1"
+
+xcodes(
+  version: ENV["FL_XCODE_VERSION"] || "15.2.0",
+  select_for_current_build_only: true, 
+  update_list: false
+)
+
+mac_schemes = ["AllTests_macOS"]
+ios_schemes = ["AllTests_iOS"]
+
+# Figure out if a setting is truthy
+def true?(obj)
+  if obj.nil?
+    raise "Object is nil. Not a valid boolean value"
+  end
+  obj.to_s.downcase == "true"
+end
+
+desc "Lane that resolves the project dependencies using Carthage."
+lane :carthage_resolve_dependencies do
+  carthage_mint="mint run carthage"
+  carthage(executable: carthage_mint, command: "bootstrap", no_build: true)
+  # Create Xcodeproj when necessary for Carthage dependencies
+  sh("find", "../Carthage/Checkouts/", "-type", "d", "-mindepth", "1", "-maxdepth", "1", "!", "-exec", "sh", "-c", "test -e {}/*.xcodeproj/project.pbxproj", ";", "-execdir", "sh", "-c", "cd {}; if [ -e project.yml ]; then mint run xcodegen; fi;", ";")
+  sh("find", "../Carthage/Checkouts/", "-type", "d", "-mindepth", "1", "-maxdepth", "1", "!", "-exec", "sh", "-c", "test -e {}/*.xcodeproj/project.pbxproj", ";", "-execdir", "sh", "-c", "cd {}; if [ -e Package.swift ] && [ -e Package.xcconfig ]; then swift package generate-xcodeproj --xcconfig-overrides Package.xcconfig; elif [ -e Package.swift ]; then swift package generate-xcodeproj; fi;", ";")
+
+  carthage(
+    executable: carthage_mint,
+    command: "build",
+    platform: "Mac,iOS",
+    use_xcframeworks: true,
+    cache_builds: true,
+    configuration: "Debug"
+  ) 
+end
+
+desc "Build the project schemes for macOS"
+lane :build_mac do
+  
+  mac_schemes.each do |scheme|
+    scan(
+      scheme: scheme,
+      build_for_testing: true,
+      destination: "platform=macOS,arch=x86_64"
+    )
+  end
+end
+
+desc "Build and test (scan) the project schemes for macOS"
+desc "CI builds should run this lane on every commit"
+desc ""
+lane :test_mac do
+  mac_schemes.each do |scheme|
+    scan(
+      scheme: scheme,
+      destination: "platform=macOS,arch=x86_64"
+    )
+  end
+end
+
+desc "Build the project for iOS"
+lane :build_ios do
+  ios_schemes.each do |scheme|
+    scan(
+      scheme: scheme,
+      build_for_testing: true
+    )
+  end
+end
+
+desc "Build and test (scan) the project for iOS"
+desc "CI builds should run this lane on every commit"
+lane :test_ios do
+  ios_schemes.each do |scheme|
+    scan(scheme: scheme)
+  end
+end
+
+desc "Build the project for macOS and iOS by calling `build_mac` and `build_ios`"
+lane :build_all do
+  build_mac
+  build_ios
+end
+
+desc "Build and test (scan) the project for macOS and iOS by calling `test_mac` and `test_ios`"
+lane :test_all do
+  test_mac
+  test_ios
+end
+
+desc "Lane that (auto) genarates API documentation from inline comments."
+lane :generate_documentation do
+
+  targetsJson = sh "cd .. && xcrun xcodebuild -quiet -list -json 1>&2 2>/dev/null; cd - > /dev/null"
+  targets = JSON.parse(targetsJson)
+
+  schemes = targets["project"]["schemes"]
+    .filter { |scheme| scheme.end_with? "_iOS" }
+    .filter { |scheme| !scheme.include? "Test" }
+
+  schemes.append("NFCCardReaderProvider")
+
+  overview = "# Overview\n\n"
+
+  for scheme in schemes
+    target_name = scheme.sub("_iOS", "")
+
+    overview += "  - [#{target_name}](modules/#{target_name}/index.html)\n"
+
+    sh "cd .. && jazzy --config \".jazzy.yml\" --xcodebuild_arguments -scheme,#{scheme},-destination,'generic/platform=iOS' --output \"docs/modules/#{target_name}\"; cd - > /dev/null"
+  end
+
+  require 'redcarpet'
+
+  renderer = Redcarpet::Render::HTML.new()
+  markdown = Redcarpet::Markdown.new(renderer, extensions = {})
+
+  indexPage = "<!DOCTYPE html>" \
+    "<html lang=\"en\">" \
+    "  <head>" \
+    "    <title>  Reference</title>" \
+    "    <link rel=\"stylesheet\" type=\"text/css\" href=\"modules/CardReaderAccess/css/jazzy.css\" />" \
+    "  </head>" \
+    "  <body>" \
+    "    <header class=\"header\">" \
+    "      <p class=\"header-col header-col--primary\">" \
+    "        <a class=\"header-link\" href=\"index.html\">" \
+    "           Docs" \
+    "        </a>" \
+    "      </p>" \
+    "    " \
+    "      <p class=\"header-col--secondary\">" \
+    "        <form role=\"search\" action=\"search.json\">" \
+    "          <input type=\"text\" placeholder=\"Search documentation\" data-typeahead>" \
+    "        </form>" \
+    "      </p>" \
+    "    " \
+    "        <p class=\"header-col header-col--secondary\">" \
+    "          <a class=\"header-link\" href=\"https://github.com/gematik/ref-openhealthcardkit\">" \
+    "            <img class=\"header-icon\" src=\"img/gh.png\"/>" \
+    "            View on GitHub" \
+    "          </a>" \
+    "        </p>" \
+    "    " \
+    "    </header>" \
+    "    <div class=\"content-wrapper\">" \
+    "      <article class=\"main-content\">" \
+    "        <div class=\"section-content top-matter\">" \
+    "          #{markdown.render(overview)}" \
+    "        </div>" \
+    "      </article>" \
+    "    </div>" \
+    "    <section class=\"footer\">" \
+    "      <p>&#169; 2021 <a class=\"link\" href=\"https://www.gematik.de\" target=\"_blank\" rel=\"external\">gematik GmbH</a></p>" \
+    "    </section>" \
+    "  </body>" \
+    "</html>"
+    
+  File.write('../docs/index.html', indexPage)
+
+end
+
+desc "Lane that runs the static code analyzer(s) for the project."
+desc "CI builds should run this lane on every commit"
+desc "Currently swiftlint is used as static analyzer"
+desc ""
+lane :static_code_analysis do
+  swiftlint_mint="mint run swiftlint"
+  swiftlint(
+    executable: swiftlint_mint,
+    mode: :lint,
+    ignore_exit_status: false,
+    quiet: true,
+    strict: true
+  )
+  sh "cd .. && swiftformat . --config .swiftformat --lint --quiet; cd -"
+end
+
+desc "Lane that sets up the SPM/Carthage dependencies and xcodeproj."
+desc ""
+desc "###Example:"
+desc "```\nfastlane setup configuration:Release\n```"
+desc ""
+lane :setup do |options|
+  carthage_resolve_dependencies options
+  # spm(command: "resolve") # use when switched to spm
+  sh("cd .. && mint run xcodegen generate --spec ./project.yml")
+end
+
+desc "Lane that the ci build should invoke directly to do a complete build/test/analysis."
+desc "This lane calls `setup`, `static_code_analysis`, "
+desc "`test_all`, `generate_documentation`. See these sub-lanes for option parameters"
+desc ""
+desc "###Example:"
+desc "```\nfastlane cibuild\n```"
+desc ""
+lane :cibuild do |options|
+  setup options
+  static_code_analysis
+  test_all
+  generate_documentation
+end
+
+
+lane :sign_adhoc do |options|
+  match(type: "adhoc")
+
+  gym(
+    skip_build_archive: true,
+    export_method: "ad-hoc",
+    output_name: "ohckit_#{build_version}_adhoc.ipa",
+    archive_path: "./distribution/ohckit_#{build_version}.xcarchive",
+    output_directory: "./distribution",
+    include_bitcode: false,
+    export_options: {
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false
+    }
+  )
+end
+
+lane :sign_appstore do |options|
+  match(type: "appstore")
+
+  gym(
+    skip_build_archive: true,
+    export_method: "app-store",
+    output_name: "ohckit_#{build_version}_store.ipa",
+    archive_path: "./distribution/ohckit_#{build_version}.xcarchive",
+    output_directory: "./distribution"
+  )
+end
+
+
+lane :build_archive do |options|
+  clear_derived_data(derived_data_path: ENV['GYM_DERIVED_DATA_PATH'])
+
+  match(type: "appstore")
+
+  gym(
+    skip_build_archive: false,
+    skip_package_ipa: true,
+    export_method: "app-store",
+    archive_path: "./distribution/ohckit_#{build_version}.xcarchive",
+    xcargs: "GEMATIK_SOURCE_VERSION=\"#{git_version}\" GEMATIK_BUNDLE_VERSION=\"#{build_version}\""
+  )
+end
+
+def git_version()
+  short_hash = last_git_commit[:abbreviated_commit_hash]
+  dirty = sh("git diff --quiet || echo '-dirty'").strip!
+
+  "#{short_hash}#{dirty}"
+end
+
+def build_version()
+  ENV['BUILD_NUMBER'] || 'LOCAL_BUILD'
+end
+
+
+before_all do |lane, options|
+  load_keychain
+end
+
+after_all do |lane, options|
+  remove_keychain
+end
+
+error do |lane, exception, options|
+  remove_keychain
+end
+
+def load_keychain
+  remove_keychain
+
+  create_keychain(
+    name: "gematik",
+    password: "gematikpassword",
+    unlock: true,
+    timeout: 0
+  )
+end
+
+def remove_keychain
+  if File.exist? File.expand_path("~/Library/Keychains/gematik-db")
+    delete_keychain(name: "gematik") 
+  end
+end
+
+def randomWord(length)
+  return ('a'..'z').to_a.shuffle[0,length].join
+end
+
+def isDryRun(options)
+  if options.key?(:dry_run)
+    dry_run = options[:dry_run]
+  elsif !ENV['G_PUBLISH_DRY_RUN'].nil?
+    dry_run = true?(ENV['G_PUBLISH_DRY_RUN'])
+  else
+    dry_run = false
+  end
+  return dry_run
+end
+
+lane :publish do |options|
+  build_archive
+
+  sign_adhoc
+  # todo(?): if_ci { appcenter_upload + notify_teams_channel}
+
+  sign_appstore
+
+  dry_run = isDryRun(options)
+  UI.message("Live run") unless dry_run
+  UI.message("Dry run") if dry_run
+  app_store_connect_api_key(
+    issuer_id: "69a6de92-74a9-47e3-e053-5b8c7c11a4d1"
+  )
+
+  upload_to_testflight(
+    ipa: "./distribution/ohckit_#{build_version}_store.ipa",
+    skip_submission: true,
+    apple_id: '1450490405',
+    dev_portal_team_id: "A9FL89PFFL",
+    skip_waiting_for_build_processing: true
+  ) unless dry_run
+
+  sh "cd .. && mkdir -p artifacts/appstorebuild_pu/ && rm -rf artifacts/appstorebuild_pu/* && mv distribution artifacts/appstorebuild_pu/; cd - "
+end
