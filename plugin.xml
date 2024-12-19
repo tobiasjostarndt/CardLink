@@ -26,10 +26,10 @@
 
         <framework src="Foundation.framework" />
 
-        <framework src="Starscream.framework" />
-        <framework src="GemCommonsKit.framework" />
-        <framework src="CardReaderProviderApi.framework" />
-        <framework src="NFCCardREaderProvider.framework" />
+        <framework src="Starscream" />
+        <framework src="GemCommonsKit" />
+        <framework src="CardReaderProviderApi" />
+        <framework src="NFCCardREaderProvider" />
 
         <preference name="UseSwiftLanguageVersion" value="5" />
 
