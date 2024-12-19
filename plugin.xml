@@ -14,7 +14,7 @@
 
     <!-- iOS Platform Configuration -->
     <platform name="ios">
-        <config-file target="config.xml" parent="/plist"> <!-- Correct parent node for iOS config -->
+        <config-file target="config.xml" parent="/*"> <!-- Correct parent node for iOS config -->
             <feature name="CardLink">
                 <param name="ios-package" value="CardLink" onload="true" />
             </feature>
@@ -54,7 +54,7 @@
             <service android:name="com.appdinx.cardlink.CardLinkCardHandler" />
         </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="">
+        <config-file target="AndroidManifest.xml" parent="manifest">
             <uses-permission android:name="android.permission.NFC" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
