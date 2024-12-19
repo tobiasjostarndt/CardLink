@@ -35,7 +35,8 @@ import de.gematik.ti.healthcardaccess.exceptions.runtime.BasicChannelException;
 import de.gematik.ti.healthcardaccess.operation.Subscriber;
 import de.gematik.ti.openhealthcard.events.request.RequestPaceKeyEvent;
 import de.gematik.ti.openhealthcard.events.response.entities.PaceKey;
-import com.appdinx.cardlink.activities.CardInsertionActivity;
+
+import com.appdinx.cardlink.CardLinkCardHandler;
 import com.appdinx.cardlink.artemis.ClientManager;
 import com.appdinx.cardlink.codec.Message;
 import com.appdinx.cardlink.util.DeviceUtils;
@@ -50,31 +51,26 @@ public class CardCommandHandler {
 
     private final String canNumber;
 
-    private static CardInsertionActivity cardInsertionActivity;
+    private static CardLinkCardHandler cardLinkCardHandler;
 
     static Map<String, List<APDUTiming>> apduTimings = new HashMap<>();
 
-    public CardCommandHandler(String canNumber, CardInsertionActivity cardInsertionActivity) {
+    public CardCommandHandler(String canNumber, CardLinkCardHandler cardLinkCardHandler) {
         this.canNumber = canNumber;
-        CardCommandHandler.cardInsertionActivity = cardInsertionActivity;
+        CardCommandHandler.cardLinkCardHandler = cardLinkCardHandler;
     }
 
     @Subscribe
     public void onPaceKeyEvent(RequestPaceKeyEvent event) {
-
         ICard card = event.getCard();
+
         try {
             healthCard = new HealthCard(card);
-
-            cardInsertionActivity.setStatusText("Karte gefunden");
 
             new TrustedChannelPaceKeyExchange(healthCard, canNumber).negotiatePaceKey().subscribe(
                     new Subscriber<PaceKey>() {
                         @Override
                         public void onSuccess(final PaceKey paceKey) {
-                            CardCommandHandler.cardInsertionActivity.runOnUiThread(() -> {
-                                CardCommandHandler.cardInsertionActivity.setStatusText("Verschlüsselung aktiviert");
-                            });
                             event.getResponseListener()
                                     .handlePaceKey(paceKey);
                             try {
@@ -121,32 +117,19 @@ public class CardCommandHandler {
 
                                 Log.d("registerEgk", json);
 
-                                clientManager.sendCardInsertedMessage(DeviceUtils.getDeviceId(cardInsertionActivity), json);
+                                clientManager.sendCardInsertedMessage(DeviceUtils.getDeviceId(cardLinkCardHandler), json);
                             } catch (Exception e) {
                                 log.log(Level.SEVERE, "Error communicating with the server: ", e);
-                                cardInsertionActivity.setStatusText("Kann Karte nicht an Server senden");
                             }
                         }
 
                         @Override
                         public void onError(final Throwable t) throws RuntimeException {
                             Log.e(TAG, "PaceKey negotiation failed! " + t.getMessage());
-                            if (Objects.requireNonNull(t.getMessage()).contains("AUTHENTICATION_FAILURE")) {
-                                CardCommandHandler.cardInsertionActivity.runOnUiThread(() -> {
-                                    CardCommandHandler.cardInsertionActivity.setStatusText("Falsche PIN");
-                                });
-                            } else {
-                                CardCommandHandler.cardInsertionActivity.runOnUiThread(() -> {
-                                    CardCommandHandler.cardInsertionActivity.setStatusText("Verschlüsselung fehlgeschlagen");
-                                });
-                            }
                         }
                     });
         } catch (BasicChannelException bce) {
             Log.e(TAG, "Card can't be read", bce);
-            CardCommandHandler.cardInsertionActivity.runOnUiThread(() -> {
-                CardCommandHandler.cardInsertionActivity.setStatusText("Karte nicht lesbar");
-            });
         }
     }
 
@@ -282,9 +265,7 @@ public class CardCommandHandler {
         try {
             if (healthCard == null) {
                 Log.w(TAG, "healthCard is null");
-                cardInsertionActivity.runOnUiThread(() -> {
-                    cardInsertionActivity.setStatusText("Karte wurde entfernt");
-                });
+
                 return new ResponseApdu(new byte[]{0x62, 0x00});
             }
 
@@ -302,9 +283,7 @@ public class CardCommandHandler {
         } catch (Exception e) {
             // Handle card connection or APDU transmission errors
             Log.e(TAG, "Could not communicate with card", e);
-            cardInsertionActivity.runOnUiThread(() -> {
-                cardInsertionActivity.setStatusText("Fehler bei Karte lesen");
-            });
+
             return new ResponseApdu(new byte[]{0x62, 0x00});
         }
     }

@@ -19,6 +19,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.DatatypeConverter;
 
+import com.appdinx.cardlink.CardLink;
 import com.appdinx.cardlink.egk.CardCommandHandler;
 
 public class WebSocketClient implements Client {
@@ -80,6 +81,17 @@ public class WebSocketClient implements Client {
                     String type = firstMessage.getString("type");
 
                     if(type == null || (!type.equals("sendAPDU") && !type.equals("eRezeptTokensFromAVS"))) {
+                        if(type != null && type.equals("confirmSMSCodeResponse")){
+                            String payload = firstMessage.getString("payload");
+                            String codeJSON = new String(DatatypeConverter.parseBase64Binary(payload));
+
+                            if(codeJSON.contains("SUCCESS")){
+                                CardLink.isCodeCorrect = true;
+                            }else{
+                                CardLink.isCodeCorrect = false;
+                            }
+                        }
+
                         return;
                     }
                     byte[] messagePayload;
@@ -93,7 +105,6 @@ public class WebSocketClient implements Client {
                         String apdu = apduJsonObject.getString("apdu");
                         messagePayload = DatatypeConverter.parseBase64Binary(apdu);
                     }
-
 
                     MqttMessage mqttMessage = new MqttMessage();
                     mqttMessage.setPayload(messagePayload);

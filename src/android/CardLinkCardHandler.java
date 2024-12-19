@@ -37,7 +37,6 @@ import javax.xml.bind.DatatypeConverter;
 import de.gematik.ti.cardreader.provider.api.command.IResponseApdu;
 import de.gematik.ti.cardreader.provider.nfc.control.NfcCardChecker;
 import de.gematik.ti.cardreader.provider.nfc.entities.NfcCardReader;
-import com.appdinx.cardlink.activities.task.FetchPrescriptions;
 import com.appdinx.cardlink.artemis.CardTerminalMessage;
 import com.appdinx.cardlink.artemis.ClientManager;
 import com.appdinx.cardlink.artemis.CallbackHandler;

@@ -47,12 +47,13 @@
             <service android:name="com.appdinx.cardlink.service.ConnectionService" />
             <service android:name="com.appdinx.cardlink.CardLinkService" />
             <service android:name="com.appdinx.cardlink.CardLinkCardHandler" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="manifest">
             <uses-permission android:name="android.permission.NFC" />
-            <uses-permission android:name="android.permission.INTERNET" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
             <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-            <uses-permission android:name="android.permission.READ_SMS" />
             <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
         </config-file>
 
@@ -84,8 +85,6 @@
         <source-file src="src/android/CardLinkService.java" target-dir="src/com/appdinx/cardlink" />
         <source-file src="src/android/CardLinkCardHandler.java" target-dir="src/com/appdinx/cardlink" />
 
-        <source-file src="src/android/activities/task/FetchPrescriptions.java" target-dir="src/com/appdinx/cardlink/activities/task" />
-
         <source-file src="src/android/artemis/Broker.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/Callback.java" target-dir="src/com/appdinx/cardlink/artemis" />
         <source-file src="src/android/artemis/CallbackHandler.java" target-dir="src/com/appdinx/cardlink/artemis" />
@@ -112,5 +111,8 @@
         <source-file src="src/android/service/ConnectionService.java" target-dir="src/com/appdinx/cardlink/service" />
 
         <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
+        <source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" />
+
+        
     </platform>
 </plugin>
