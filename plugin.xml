@@ -21,6 +21,11 @@
         </config-file>
 
         <framework src="Foundation.framework" />
+        
+        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/ref-GemCommonsKit" />
+        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/ref-OpenHealthCardKit" />
+        <resource-file src="/Users/tobiasjostarndt/Develop/Appdinx/Packages/Starscream" />
+
         <preference name="UseSwiftLanguageVersion" value="5" />
 
         <!-- iOS Source Files -->
