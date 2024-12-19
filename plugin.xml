@@ -49,7 +49,7 @@
             <service android:name="com.appdinx.cardlink.CardLinkCardHandler" />
         </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="manifest">
+        <config-file target="AndroidManifest.xml" parent="">
             <uses-permission android:name="android.permission.NFC" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
