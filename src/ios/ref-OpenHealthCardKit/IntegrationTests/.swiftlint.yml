@@ -1,4 +1,0 @@
-disabled_rules:
-  - function_body_length
-  - force_unwrapping
-  - type_name
