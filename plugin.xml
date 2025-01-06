@@ -133,6 +133,7 @@
         <source-file src="src/android/service/ConnectionService.java" target-dir="src/com/appdinx/cardlink/service" />
 
         <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
-        <source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" />
+
+        <!--source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" /-->
     </platform>
 </plugin>
