@@ -182,8 +182,6 @@
     func startReadCard(command: CDVInvokedUrlCommand) {
         Task {
             do {
-                var pluginResult: CDVPluginResult? = nil
-
                 NotificationCenter.default.addObserver(
                     self,
                     selector: #selector(self.handleEgkDataReceived(_:)),
