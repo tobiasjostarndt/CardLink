@@ -1,0 +1,4 @@
+[#CardReaderProviderApi]
+=== CardReaderProviderApi
+
+(Smart)CardReader protocols for interacting with `HealthCardAccess`.
