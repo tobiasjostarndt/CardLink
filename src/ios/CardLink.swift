@@ -180,10 +180,10 @@
 
     @objc(startReadCard:)
     func startReadCard(command: CDVInvokedUrlCommand) {
-        var pluginResult: CDVPluginResult? = nil
-
         Task {
             do {
+                var pluginResult: CDVPluginResult? = nil
+
                 NotificationCenter.default.addObserver(
                     self,
                     selector: #selector(self.handleEgkDataReceived(_:)),
@@ -241,15 +241,17 @@
                 )
 
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
+                
+                var pluginResult: CDVPluginResult? = nil
                 pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             } catch {
                 print("[ERROR] Failed to scan card: \(error)")
+                var pluginResult: CDVPluginResult? = nil
                 pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+                self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             }
         }
-        
-        // Das Ergebnis an den Cordova-Callback zurückgeben
-        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
     
     @objc(isCardScanned:)
