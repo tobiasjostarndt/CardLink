@@ -36,9 +36,6 @@ let package = Package(
         .target(
             name: "ObjCCommonsKit",
             dependencies: []),
-        .testTarget(
-            name: "GemCommonsKitTests",
-            dependencies: ["GemCommonsKit", "Nimble"]),
     ],
     swiftLanguageVersions: [.v5]
 )
