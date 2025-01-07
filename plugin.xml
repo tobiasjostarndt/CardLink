@@ -21,7 +21,7 @@
         </config-file>
         
         <!-- Hinzufügen des Drittanbieter-Pakets zum Plugin -->
-        <resource-file src="src/ios/Starscream" />
+        <!--resource-file src="src/ios/Starscream" /-->
         <resource-file src="src/ios/ref-OpenHealthCardKit" />
         <resource-file src="src/ios/ref-GemCommonsKit" />
         
