@@ -27,6 +27,7 @@ public class CardLink extends CordovaPlugin {
     public static boolean cardScanned = false;
     public static boolean isConnectedWSS = false;
     public static String error = "";
+    public static String smsText = "Bitte geben Sie in der CardLink App folgenden Code ein: {0}";
 
     public static Activity cordovaActivity;
 
@@ -75,6 +76,18 @@ public class CardLink extends CordovaPlugin {
                 return false;
         }
     }
+
+    private void setSMSText(JSONArray args, CallbackContext callbackContext) {
+        try {
+            String sT = args.getString(0);
+
+            if (sT != null && !sT.isEmpty()) {
+                smsText = sT;
+                callbackContext.success("true");
+            }
+        } catch (JSONException e) {
+        }
+    }
     
     private void establishWSS(JSONArray args, CallbackContext callbackContext) {
         try {
@@ -116,7 +129,7 @@ public class CardLink extends CordovaPlugin {
                     jsonObject.put("type", "requestSMSCode");
                     JSONObject payload = new JSONObject();
                     payload.put("senderId", "cardlink");
-                    payload.put("textTemplate", "Bitte geben Sie in der CardLink App folgenden Code ein: {0}");
+                    payload.put("textTemplate", smsText);
                     payload.put("phoneNumber", phoneNumber);
                     payload.put("textReassignmentTemplate", "Ihre Gesundheitskarte {0} wurde der Telefonnummer {1} neu zugeordnet. Wenn Sie diese Telefonnummer kennen, ist alles in Ordnung. Wenn Ihre Karte gestohlen wurde, lassen Sie diese bitte von Ihrer Versicherung sperren.");
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
