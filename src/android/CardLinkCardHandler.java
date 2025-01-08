@@ -50,7 +50,7 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
 
     private NfcCardReader nfcCardReader;
     private NfcAdapter nfcAdapter;
-    private NfcCardChecker nfcCardChecker;
+    //private NfcCardChecker nfcCardChecker;
     private CardCommandHandler cardCommandHandler;
     private CardAbsentEventSubscriber cardAbsentEventSubscriber;
     private Handler handler;
@@ -159,7 +159,7 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
 
     private void initializeCardReader() {
         nfcCardReader = new NfcCardReader(nfcAdapter, this);
-        nfcCardChecker = new NfcCardChecker(nfcCardReader);
+        //nfcCardChecker = new NfcCardChecker(nfcCardReader);
 
         final Bundle options = new Bundle();
 
