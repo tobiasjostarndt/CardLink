@@ -11,6 +11,21 @@
     private lazy var eRezeptBundlesFromAVS = ""
     private lazy var cardSessionID = ""
     private lazy var error = ""
+    private lazy var smsText = "Bitte geben Sie in der App folgenden Code ein: {0}"
+    
+    @objc(setSMSText:)
+    func setSMSText(command: CDVInvokedUrlCommand) {
+        var pluginResult: CDVPluginResult? = nil
+        
+        // Überprüfen, ob der erste Parameter eine gültige URL ist
+        if let smsText = command.arguments.first as? String, !smsText.isEmpty {
+            self.smsText = smsText
+        }
+        
+        pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
+        
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+    }
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
@@ -68,7 +83,7 @@
         
             let payloadDict: [String: String] = [
                 "senderId": "cardlink",
-                "textTemplate": "Bitte geben Sie in der Appdinx App folgenden Code ein: {0}",
+                "textTemplate": self.smsText,
                 "phoneNumber": phoneNumber,
                 "textReassignmentTemplate": "Ihre Gesundheitskarte {0} wurde der Telefonnummer {1} neu zugeordnet. Wenn Sie diese Telefonnummer kennen, ist alles in Ordnung. Wenn Ihre Karte gestohlen wurde, lassen Sie diese bitte von Ihrer Versicherung sperren."
             ]
