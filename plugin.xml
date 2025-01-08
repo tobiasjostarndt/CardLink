@@ -92,7 +92,7 @@
         <framework src="androidx.appcompat:appcompat:1.6.1" />
         <framework src="de.gematik.ti:healthcard.control.common:1.0.0" />
         <framework src="de.gematik.ti:healthcard.access:1.2.2" />
-        <framework src="de.gematik.ti:cardreader.provider.nfc:1.1.2" />
+        <framework src="de.gematik.ti:cardreader.provider.nfc:1.1.2-without-secure-messaging" />
         <framework src="org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.0" />
         <framework src="org.eclipse.paho:org.eclipse.paho.android.service:1.1.1" />
         <framework src="androidx.localbroadcastmanager:localbroadcastmanager:1.1.0" />
@@ -105,8 +105,8 @@
 
         <!-- Local JAR file -->
         <source-file src="libs/asn1-runtime.jar" target-dir="libs" />
-        <source-file src="project-repo/cardreader.provider.nfc-1.1.2-without-secure-messaging.aar" target-dir="../../../project-repos" />
-        <source-file src="project-repo/cardreader.provider.nfc-1.1.2-without-secure-messaging.pom" target-dir="../../../project-repos" />
+        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.aar" target-dir="../../../project-repo" />
+        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.pom" target-dir="../../../project-repo" />
 
         <!-- Java Source Files -->
         <source-file src="src/android/CardLink.java" target-dir="src/com/appdinx/cardlink" />
@@ -136,6 +136,6 @@
 
         <source-file src="src/android/util/DeviceUtils.java" target-dir="src/com/appdinx/cardlink/util" />
 
-        <!--source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" /-->
+        <source-file src="src/android/SecureMessaging.java" target-dir="src/de/gematik/ti/cardreader/provider/nfc/security" />
     </platform>
 </plugin>
