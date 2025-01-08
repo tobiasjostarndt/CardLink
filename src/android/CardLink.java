@@ -72,6 +72,9 @@ public class CardLink extends CordovaPlugin {
             case "isError":
                 isError(callbackContext);
                 return true;
+            case "setSMSText":
+                setSMSText(args, callbackContext);
+                return true;
             default:
                 return false;
         }
@@ -235,7 +238,7 @@ public class CardLink extends CordovaPlugin {
         if (cardScanned && !eRezeptTokensFromAVS.isEmpty()) {
             callbackContext.success(eRezeptTokensFromAVS);
         } else {
-            callbackContext.error("No tokens available");
+            callbackContext.success("false");
         }
     }
 
@@ -243,7 +246,7 @@ public class CardLink extends CordovaPlugin {
         if (cardScanned && !eRezeptBundlesFromAVS.isEmpty()) {
             callbackContext.success(eRezeptBundlesFromAVS);
         } else {
-            callbackContext.error("No bundles available");
+            callbackContext.success("false");
         }
     }
 
