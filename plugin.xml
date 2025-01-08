@@ -105,8 +105,8 @@
 
         <!-- Local JAR file -->
         <source-file src="libs/asn1-runtime.jar" target-dir="libs" />
-        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.aar" target-dir="../../../project-repo" />
-        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.pom" target-dir="../../../project-repo" />
+        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.aar" target-dir="../../../project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging" />
+        <source-file src="project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging/cardreader.provider.nfc-1.1.2-without-secure-messaging.pom" target-dir="../../../project-repo/de/gematik/ti/cardreader.provider.nfc/1.1.2-without-secure-messaging" />
 
         <!-- Java Source Files -->
         <source-file src="src/android/CardLink.java" target-dir="src/com/appdinx/cardlink" />
