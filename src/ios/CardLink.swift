@@ -186,7 +186,7 @@
             self.canNumber = canNumber;
             pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "true")
         } else {
-            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
         }
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
@@ -260,6 +260,10 @@
                 self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
             } catch {
                 print("[ERROR] Failed to scan card: \(error)")
+                
+                self.error = "\(error)"
+                self.cardScanned = true
+                
                 var pluginResult: CDVPluginResult? = nil
                 pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
                 self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
@@ -288,7 +292,7 @@
         if self.cardScanned && self.eRezeptTokensFromAVS != "" {
             pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: self.eRezeptTokensFromAVS)
         } else {
-            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
         }
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
@@ -302,7 +306,7 @@
         if self.cardScanned && self.eRezeptBundlesFromAVS != "" {
             pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: self.eRezeptBundlesFromAVS)
         } else {
-            pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR)
+            pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "false")
         }
         
         // Das Ergebnis an den Cordova-Callback zurückgeben
@@ -480,6 +484,7 @@
 
                 if let jsonString = String(data: jsonData, encoding: .utf8) {
                     self.error = jsonString
+                    self.cardScanned = true
                 }
             } catch {
                 print("Fehler beim Konvertieren des Dictionaries zu einem String: \(error.localizedDescription)")
