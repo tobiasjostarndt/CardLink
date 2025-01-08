@@ -36,6 +36,9 @@ var CardLink = {
     isError: function(cb){
         exec(cb, null, PLUGIN_NAME, 'isError', []);
     },
+    setSMSText: function(arg0, cb){
+        exec(cb, null, PLUGIN_NAME, 'setSMSText', [arg0]);
+    },
 };
 
 module.exports = CardLink;
