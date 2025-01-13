@@ -17,13 +17,14 @@ import com.appdinx.cardlink.artemis.ClientManager;
 import com.appdinx.cardlink.artemis.WebSocketClient;
 import com.appdinx.cardlink.service.AbstractService;
 import com.appdinx.cardlink.service.ConnectionService;
+import com.appdinx.mcf6wvlbrl0.BuildConfig;
 
 public class CardLinkService extends Service {
 
     private static final Logger log = Logger.getLogger(CardLinkService.class.getName());
 
     static {
-        HandroidLoggerAdapter.DEBUG = false;
+        HandroidLoggerAdapter.DEBUG = BuildConfig.DEBUG;
         HandroidLoggerAdapter.ANDROID_API_LEVEL = Build.VERSION.SDK_INT;
         HandroidLoggerAdapter.APP_NAME = "APPDINX";
     }
@@ -50,7 +51,14 @@ public class CardLinkService extends Service {
 
         setConnectedWSS(false);
 
-        registerReceiver(connectionStatusReceiver, new IntentFilter(AbstractService.CONNECTION_STATUS_ACTION));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 oder höher
+            registerReceiver(connectionStatusReceiver, 
+                new IntentFilter(AbstractService.CONNECTION_STATUS_ACTION), 
+                Context.RECEIVER_EXPORTED);
+        } else { // Ältere Android-Versionen
+            registerReceiver(connectionStatusReceiver, 
+                new IntentFilter(AbstractService.CONNECTION_STATUS_ACTION));
+        }
 
         setupConnection();
 
