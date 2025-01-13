@@ -17,14 +17,13 @@ import com.appdinx.cardlink.artemis.ClientManager;
 import com.appdinx.cardlink.artemis.WebSocketClient;
 import com.appdinx.cardlink.service.AbstractService;
 import com.appdinx.cardlink.service.ConnectionService;
-import com.appdinx.mcf6wvlbrl0.BuildConfig;
 
 public class CardLinkService extends Service {
 
     private static final Logger log = Logger.getLogger(CardLinkService.class.getName());
 
     static {
-        HandroidLoggerAdapter.DEBUG = BuildConfig.DEBUG;
+        HandroidLoggerAdapter.DEBUG = false;
         HandroidLoggerAdapter.ANDROID_API_LEVEL = Build.VERSION.SDK_INT;
         HandroidLoggerAdapter.APP_NAME = "APPDINX";
     }
