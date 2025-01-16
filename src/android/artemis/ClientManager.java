@@ -16,7 +16,7 @@ public class ClientManager {
 
     Context context;
 
-    private ClientManager() {
+    public ClientManager() {
 
     }
 
