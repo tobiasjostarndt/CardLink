@@ -12,6 +12,7 @@
     private lazy var cardSessionID = ""
     private lazy var error = ""
     private lazy var smsText = "Bitte geben Sie in der App folgenden Code ein: {0}"
+    private lazy var isInitObservers = false
     
     @objc(setSMSText:)
     func setSMSText(command: CDVInvokedUrlCommand) {
@@ -197,61 +198,65 @@
     func startReadCard(command: CDVInvokedUrlCommand) {
         Task {
             do {
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleEgkDataReceived(_:)),
-                    name: .egkDataReceived,
-                    object: nil
-                )
+                if(self.isInitObservers == false){
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleEgkDataReceived(_:)),
+                        name: .egkDataReceived,
+                        object: nil
+                    )
 
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedFirstSendAPDU(_:)),
-                    name: .receivedFirstSendAPDU,
-                    object: nil
-                )
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedFirstSendAPDU(_:)),
+                        name: .receivedFirstSendAPDU,
+                        object: nil
+                    )
 
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedSecondSendAPDU(_:)),
-                    name: .receivedSecondSendAPDU,
-                    object: nil
-                )
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedSecondSendAPDU(_:)),
+                        name: .receivedSecondSendAPDU,
+                        object: nil
+                    )
 
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedFirstSendAPDUResponse(_:)),
-                    name: .receivedFirstSendAPDUResponse,
-                    object: nil
-                )
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedFirstSendAPDUResponse(_:)),
+                        name: .receivedFirstSendAPDUResponse,
+                        object: nil
+                    )
 
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedSecondSendAPDUResponse(_:)),
-                    name: .receivedSecondSendAPDUResponse,
-                    object: nil
-                )
-                
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedERezeptTokensFromAVS(_:)),
-                    name: .receivedERezeptTokensFromAVS,
-                    object: nil
-                )
-                
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedERezeptBundlesFromAVS(_:)),
-                    name: .receivedERezeptBundlesFromAVS,
-                    object: nil
-                )
-                
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(self.handleReceivedTasklistError(_:)),
-                    name: .receivedTasklistError,
-                    object: nil
-                )
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedSecondSendAPDUResponse(_:)),
+                        name: .receivedSecondSendAPDUResponse,
+                        object: nil
+                    )
+                    
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedERezeptTokensFromAVS(_:)),
+                        name: .receivedERezeptTokensFromAVS,
+                        object: nil
+                    )
+                    
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedERezeptBundlesFromAVS(_:)),
+                        name: .receivedERezeptBundlesFromAVS,
+                        object: nil
+                    )
+                    
+                    NotificationCenter.default.addObserver(
+                        self,
+                        selector: #selector(self.handleReceivedTasklistError(_:)),
+                        name: .receivedTasklistError,
+                        object: nil
+                    )
+                    
+                    self.isInitObservers = true
+                }
 
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
                 
