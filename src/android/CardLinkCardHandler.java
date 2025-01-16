@@ -50,7 +50,7 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
 
     private NfcCardReader nfcCardReader;
     private NfcAdapter nfcAdapter;
-    //private NfcCardChecker nfcCardChecker;
+    private NfcCardChecker nfcCardChecker;
     private CardCommandHandler cardCommandHandler;
     private CardAbsentEventSubscriber cardAbsentEventSubscriber;
     private Handler handler;
@@ -168,15 +168,21 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
     }
 
     private void initializeEventBus() {
-        EventBus eventBus = EventBus.getDefault();
-        eventBus.register(cardCommandHandler);
-        eventBus.register(cardAbsentEventSubscriber);
+        try{
+            EventBus eventBus = EventBus.getDefault();
+            eventBus.register(cardCommandHandler);
+            eventBus.register(cardAbsentEventSubscriber);
+        }catch(Exception x){
+        }
     }
 
     private void unregisterEventBus() {
-        EventBus eventBus = EventBus.getDefault();
-        eventBus.unregister(cardCommandHandler);
-        eventBus.unregister(cardAbsentEventSubscriber);
+        try{
+            EventBus eventBus = EventBus.getDefault();
+            eventBus.unregister(cardCommandHandler);
+            eventBus.unregister(cardAbsentEventSubscriber);
+        }catch(Exception x){
+        }
     }
 
     private void subscribeToDeviceEvents() {
