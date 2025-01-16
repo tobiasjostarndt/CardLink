@@ -140,6 +140,8 @@ public class WebSocketClient implements Client {
                 if(connectionListener != null) {
                     connectionListener.onConnectionFailure();
                 }
+
+                CardLink.error = "couldNotInitializeSession";
             }
 
             @Override
