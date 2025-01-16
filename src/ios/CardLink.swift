@@ -30,6 +30,16 @@
     
     @objc(establishWSS:)
     func establishWSS(command: CDVInvokedUrlCommand) {
+        webSocketClientManager = WebSocketClientManager()
+        isCodeCorrect = false
+        canNumber = ""
+        correlationId = ""
+        cardScanned = false
+        eRezeptTokensFromAVS = ""
+        eRezeptBundlesFromAVS = ""
+        cardSessionID = ""
+        error = ""
+        
         var pluginResult: CDVPluginResult? = nil
         
         // Überprüfen, ob der erste Parameter eine gültige URL ist
@@ -196,6 +206,9 @@
 
     @objc(startReadCard:)
     func startReadCard(command: CDVInvokedUrlCommand) {
+        self.error = ""
+        self.cardScanned = false
+        
         Task {
             do {
                 if(self.isInitObservers == false){
@@ -258,6 +271,7 @@
                     self.isInitObservers = true
                 }
 
+                cardReaderManager = CardReaderManager()
                 _ = try await cardReaderManager.scanCard(canNumber: canNumber, cardSessionId: webSocketClientManager.cardSessionId!)
                 
                 var pluginResult: CDVPluginResult? = nil
