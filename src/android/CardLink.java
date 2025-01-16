@@ -40,6 +40,14 @@ public class CardLink extends CordovaPlugin {
 
         switch (action) {
             case "establishWSS":
+                canNumber = "";
+                eRezeptTokensFromAVS = "";
+                eRezeptBundlesFromAVS = "";
+                isCodeCorrect = false;
+                cardScanned = false;
+                isConnectedWSS = false;
+                error = "";
+
                 establishWSS(args, callbackContext);
                 return true;
             case "isConnectedWSS":
@@ -213,6 +221,9 @@ public class CardLink extends CordovaPlugin {
 
     private void startReadCard(CallbackContext callbackContext) {
         try {
+            cardScanned = false;
+            error = "";
+
             Intent intent = new Intent(cordova.getActivity(), CardLinkCardHandler.class);
 
             intent.putExtra("canNumber", canNumber);

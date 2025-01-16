@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,7 +61,7 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String canNumber = intent.getStringExtra("canNumber");
 
-        clientManager = ClientManager.getInstance();
+        clientManager = new ClientManager();
         clientManager.subscribe(this);
         handler = new Handler(Looper.getMainLooper());
 
@@ -158,7 +159,41 @@ public class CardLinkCardHandler extends Service implements CallbackHandler {
     }
 
     private void initializeCardReader() {
-        nfcCardReader = new NfcCardReader(nfcAdapter, this);
+        nfcCardReader = new NfcCardReader(nfcAdapter, this) {
+            @Override
+            public void onTagRemoved() {
+                log.log(Level.SEVERE, "ERROR");
+                unregisterEventBus();
+
+                if(nfcAdapter != null){
+                    nfcAdapter.disableReaderMode(CardLink.getCordovaActivity());
+                    this.setOnline(false);
+                }
+
+                CardLink.error = "couldNotInitializeSession";
+
+                super.onTagRemoved();
+            }
+
+            @Override
+            public void onTagDiscovered(Tag tag) {
+                try{
+                    super.onTagDiscovered(tag);
+                }catch(Exception x){
+                    log.log(Level.SEVERE, "ERROR");
+                    unregisterEventBus();
+
+                    if(nfcAdapter != null){
+                        nfcAdapter.disableReaderMode(CardLink.getCordovaActivity());
+                        this.setOnline(false);
+                    }
+
+                    CardLink.error = "couldNotInitializeSession";
+                }
+            }
+        };
+
+
         //nfcCardChecker = new NfcCardChecker(nfcCardReader);
 
         final Bundle options = new Bundle();
