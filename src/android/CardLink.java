@@ -28,6 +28,7 @@ public class CardLink extends CordovaPlugin {
     public static boolean isConnectedWSS = false;
     public static String error = "";
     public static String smsText = "Bitte geben Sie in der CardLink App folgenden Code ein: {0}";
+    public static String percentage = "0";
 
     public static Activity cordovaActivity;
 
@@ -223,6 +224,7 @@ public class CardLink extends CordovaPlugin {
         try {
             cardScanned = false;
             error = "";
+            percentage = "0";
 
             Intent intent = new Intent(cordova.getActivity(), CardLinkCardHandler.class);
 
@@ -241,7 +243,7 @@ public class CardLink extends CordovaPlugin {
         if (cardScanned) {
             callbackContext.success("true");
         } else {
-            callbackContext.success("false");
+            callbackContext.success(percentage);
         }
     }
 
