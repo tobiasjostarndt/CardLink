@@ -57,21 +57,25 @@ public class NFCScannerController: ScannerController {
     }
     
     let messages = NFCHealthCardSession<Data>.Messages(
-        discoveryMessage: NSLocalizedString("Warten auf die Platzierung der Karte", comment: ""),
+        discoveryMessage: NSLocalizedString("Die Karte an den oberern Rand des Handys halten und warten, bis eine sichere Verbindung hergestellt wird ...", comment: ""),
         connectMessage: NSLocalizedString("connectMessage", comment: ""),
-        secureChannelMessage: NSLocalizedString("Sichere Sitzung eingerichtet", comment: ""),
+        secureChannelMessage: NSLocalizedString("Sichere Verbindung aufgebaut ...", comment: ""),
         noCardMessage: NSLocalizedString("noCardMessage", comment: ""),
         multipleCardsMessage: NSLocalizedString("multipleCardsMessage", comment: ""),
         unsupportedCardMessage: NSLocalizedString("unsupportedCardMessage", comment: ""),
-        connectionErrorMessage: NSLocalizedString("connectionErrorMessage", comment: "")
+        connectionErrorMessage: NSLocalizedString("connectionErrorMessage", comment: ""),
+        readingRecieps25: NSLocalizedString("Rezepte werden gesucht: 25 % ...", comment: ""),
+        readingRecieps50: NSLocalizedString("Rezepte werden gesucht: 50 % ...", comment: ""),
+        readingRecieps75: NSLocalizedString("Rezepte werden gesucht: 75 % ...", comment: ""),
+        readingRecieps100: NSLocalizedString("Rezepte werden gesucht: 100 % ...", comment: "")
     )
-    
+        
     deinit {
         if let observer = observer {
             NotificationCenter.default.removeObserver(observer)
         }
     }
-    
+        
     // TO BE REFACTORED
     func readEgkData(can: String, cardSessionId: String) async -> Data? {
         if case .loading = await pState { return nil }
@@ -84,18 +88,21 @@ public class NFCScannerController: ScannerController {
             
             var resultDict = [String: String]()
             
+            session.updateAlert(message: self.messages.readingRecieps25)
+            
             func transmitAndStoreResult(command: HealthCardCommand, tagName: String) async throws {
                 let response = try await command.transmitAsync(to: session.card)
                 if let base64String = response.data?.base64EncodedString() {
                     resultDict[tagName] = base64String
                 }
             }
-            
+
             let observer = NotificationCenter.default.addObserver(forName: .sendFirstSendAPDUCommandReceived, object: nil, queue: nil) { [weak self] notification in
                 guard let self = self else { return }
                 Task {
                     if let receivedObject = notification.object as? [String: Any], let payload = receivedObject["payload"] as? String {
                         self.receivedCommandFromFirstSendAPDU = payload
+                        session.updateAlert(message: self.messages.readingRecieps50)
                     } else {
                         print("Not the expected String object")
                     }
@@ -107,6 +114,7 @@ public class NFCScannerController: ScannerController {
                 Task {
                     if let receivedObject = notification.object as? [String: Any], let payload = receivedObject["payload"] as? String {
                         self.receivedCommandFromSecondSendAPDU = payload
+                        session.updateAlert(message: self.messages.readingRecieps75)
                     } else {
                         print("Not the expected String object")
                     }
