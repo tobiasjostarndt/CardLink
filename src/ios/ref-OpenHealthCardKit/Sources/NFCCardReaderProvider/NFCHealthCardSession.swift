@@ -367,6 +367,11 @@ extension NFCHealthCardSession {
         public let unsupportedCardMessage: String
         /// The generic error message
         public let connectionErrorMessage: String
+        
+        public let readingRecieps25: String
+        public let readingRecieps50: String
+        public let readingRecieps75: String
+        public let readingRecieps100: String
 
         /// Messages constructor
         ///
@@ -385,7 +390,11 @@ extension NFCHealthCardSession {
             noCardMessage: String,
             multipleCardsMessage: String,
             unsupportedCardMessage: String,
-            connectionErrorMessage: String
+            connectionErrorMessage: String,
+            readingRecieps25: String,
+            readingRecieps50: String,
+            readingRecieps75: String,
+            readingRecieps100: String
         ) {
             self.discoveryMessage = discoveryMessage
             self.connectMessage = connectMessage
@@ -394,6 +403,10 @@ extension NFCHealthCardSession {
             self.multipleCardsMessage = multipleCardsMessage
             self.unsupportedCardMessage = unsupportedCardMessage
             self.connectionErrorMessage = connectionErrorMessage
+            self.readingRecieps25 = readingRecieps25
+            self.readingRecieps50 = readingRecieps50
+            self.readingRecieps75 = readingRecieps75
+            self.readingRecieps100 = readingRecieps100
         }
     }
 }
