@@ -80,6 +80,16 @@ public class WebSocketClient implements Client {
                     }
                     String type = firstMessage.getString("type");
 
+                    if(type != null && type.equals("ready")){
+                        CardLink.percentage = "33";
+                    }else if(type != null && type.equals("sendAPDU")){
+                        CardLink.percentage = "66";
+                    }else if(type != null && type.equals("eRezeptTokensFromAVS")){
+                        CardLink.percentage = "100";
+                    }else if(type != null && type.equals("receiveTasklistError")){
+                        CardLink.percentage = "100";
+                    }
+
                     if(type == null || (!type.equals("sendAPDU") && !type.equals("eRezeptTokensFromAVS"))) {
                         if(type != null){
                             String payload = firstMessage.getString("payload");
