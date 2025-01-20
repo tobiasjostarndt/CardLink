@@ -78,19 +78,16 @@ public class WebSocketClient implements Client {
                             correlationId = jObject.getString(2);
                         }
                     }
+
                     String type = firstMessage.getString("type");
 
                     if(type != null && type.equals("ready")){
                         CardLink.percentage = "33";
                     }else if(type != null && type.equals("sendAPDU")){
                         CardLink.percentage = "66";
-                    }else if(type != null && type.equals("eRezeptTokensFromAVS")){
-                        CardLink.percentage = "100";
-                    }else if(type != null && type.equals("receiveTasklistError")){
-                        CardLink.percentage = "100";
                     }
 
-                    if(type == null || (!type.equals("sendAPDU") && !type.equals("eRezeptTokensFromAVS"))) {
+                    if(type == null || (!type.equals("sendAPDU") && !type.equals("eRezeptTokensFromAVS") && !type.equals("eRezeptBundlesFromAVS"))) {
                         if(type != null){
                             String payload = firstMessage.getString("payload");
                             String codeJSON = new String(DatatypeConverter.parseBase64Binary(payload));
@@ -103,6 +100,7 @@ public class WebSocketClient implements Client {
                                 }
                             }else if(type.equals("receiveTasklistError")){
                                 CardLink.cardScanned = true;
+                                CardLink.percentage = "100";
                                 CardLink.error = codeJSON;
                             }
                         }
@@ -114,8 +112,20 @@ public class WebSocketClient implements Client {
                     String payload = firstMessage.getString("payload");
                     String apduJson = new String(DatatypeConverter.parseBase64Binary(payload));
                     JSONObject apduJsonObject = new JSONObject(apduJson);
+
                     if(type.equals("eRezeptTokensFromAVS")) {
                         messagePayload = apduJsonObject.toString().getBytes();
+
+                        CardLink.percentage = "100";
+
+                        CardLink.eRezeptTokensFromAVS = firstMessage.toString();
+                    }  else if(type.equals("eRezeptBundlesFromAVS")) {
+                        messagePayload = apduJsonObject.toString().getBytes();
+
+                        CardLink.cardScanned = true;
+                        CardLink.percentage = "100";
+
+                        CardLink.eRezeptBundlesFromAVS = firstMessage.toString();
                     } else {
                         String apdu = apduJsonObject.getString("apdu");
                         messagePayload = DatatypeConverter.parseBase64Binary(apdu);
