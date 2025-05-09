@@ -1,4 +1,5 @@
 @objc(CardLink) class CardLink: CDVPlugin {
+    static let shared = CardLink()
     
     // Verwende lazy var, um die Instanz beim ersten Zugriff zu erstellen
     private lazy var webSocketClientManager = WebSocketClientManager()
@@ -89,8 +90,8 @@
         var pluginResult: CDVPluginResult? = nil
 
         if let phoneNumber = command.arguments.first as? String, !phoneNumber.isEmpty {
-            cardSessionID = String(Int(Date().timeIntervalSince1970))
-            webSocketClientManager.cardSessionId = "\(cardSessionID)-\(UUID().uuidString)"
+            cardSessionID = "\(String(Int(Date().timeIntervalSince1970)))-\(UUID().uuidString)"
+            webSocketClientManager.cardSessionId = cardSessionID
         
             let payloadDict: [String: String] = [
                 "senderId": "cardlink",
@@ -221,32 +222,18 @@
 
                     NotificationCenter.default.addObserver(
                         self,
-                        selector: #selector(self.handleReceivedFirstSendAPDU(_:)),
-                        name: .receivedFirstSendAPDU,
+                        selector: #selector(self.handleReceivedSendAPDU(_:)),
+                        name: .receivedSendAPDU,
                         object: nil
                     )
 
                     NotificationCenter.default.addObserver(
                         self,
-                        selector: #selector(self.handleReceivedSecondSendAPDU(_:)),
-                        name: .receivedSecondSendAPDU,
+                        selector: #selector(self.handleReceivedSendAPDUResponse(_:)),
+                        name: .receivedSendAPDUResponse,
                         object: nil
                     )
 
-                    NotificationCenter.default.addObserver(
-                        self,
-                        selector: #selector(self.handleReceivedFirstSendAPDUResponse(_:)),
-                        name: .receivedFirstSendAPDUResponse,
-                        object: nil
-                    )
-
-                    NotificationCenter.default.addObserver(
-                        self,
-                        selector: #selector(self.handleReceivedSecondSendAPDUResponse(_:)),
-                        name: .receivedSecondSendAPDUResponse,
-                        object: nil
-                    )
-                    
                     NotificationCenter.default.addObserver(
                         self,
                         selector: #selector(self.handleReceivedERezeptTokensFromAVS(_:)),
@@ -353,7 +340,7 @@
         if let cardData = notification.object as? Data {
             let base64Encoded = cardData.base64EncodedString()
             
-            let newUUID = "\(cardSessionID)-\(UUID().uuidString)"
+            let newUUID = cardSessionID
             
             let registerEgkMessage = """
             [
@@ -373,7 +360,7 @@
         }
     }
 
-    @objc func handleReceivedFirstSendAPDU(_ notification: Notification){
+    @objc func handleReceivedSendAPDU(_ notification: Notification){
         if let info = notification.object as? [String: String],
             let payload = info["payload"],
             let receivedCorrelationId = info["correlationId"] {
@@ -388,7 +375,7 @@
                     let apdu = payloadJson["apdu"] as? String {
                     
                     let apduCommand: [String: Any] = ["payload": apdu]
-                    NotificationCenter.default.post(name: .sendFirstSendAPDUCommandReceived, object: apduCommand)
+                    NotificationCenter.default.post(name: .sendAPDUCommandReceived, object: apduCommand)
                 } else {
                     print("Failed to parse the payload JSON.")
                 }
@@ -400,32 +387,7 @@
         }
     }
 
-    @objc func handleReceivedSecondSendAPDU(_ notification: Notification){
-        if let info = notification.object as? [String: String],
-            let payload = info["payload"],
-            let receivedCorrelationId = info["correlationId"] {
-            self.correlationId = receivedCorrelationId
-            
-            if let data = Data(base64Encoded: payload),
-                let payloadString = String(data: data, encoding: .utf8) {
-                if let payloadJson = try? JSONSerialization.jsonObject(with: Data(payloadString.utf8), options: []) as? [String: Any],
-                    let cardSessionId = payloadJson["cardSessionId"] as? String,
-                    let apdu = payloadJson["apdu"] as? String {
-                    
-                    let apduCommand: [String: Any] = ["payload": apdu]
-                    NotificationCenter.default.post(name: .sendSecondSendAPDUCommandReceived, object: apduCommand)
-                } else {
-                    print("Failed to parse the payload JSON.")
-                }
-            } else {
-                print("Failed to decode the base64 payload.")
-            }
-        } else {
-            print("Failed to extract payload and correlationId from notification.")
-        }
-    }
-
-    @objc func handleReceivedFirstSendAPDUResponse(_ notification: Notification){
+    @objc func handleReceivedSendAPDUResponse(_ notification: Notification){
         if let firstSendAPDUResponseData = notification.object as? Data {
             let base64Encoded = firstSendAPDUResponseData.base64EncodedString()
             let sendApduResponseMessage = """
@@ -446,31 +408,11 @@
         }
     }
     
-    @objc func handleReceivedSecondSendAPDUResponse(_ notification: Notification){
-        if let secondSendAPDUResponseData = notification.object as? Data {
-            let base64Encoded = secondSendAPDUResponseData.base64EncodedString()
-            let sendApduResponseMessage = """
-                        [
-                            {
-                                "type": "sendAPDUResponse",
-                                "payload": "\(base64Encoded)"
-                            },
-                            "\(webSocketClientManager.cardSessionId!)",
-                            "\(self.correlationId)"
-                        ]
-                        """
-            
-            print(sendApduResponseMessage)
-            webSocketClientManager.send(sendApduResponseMessage) {
-                print("SUCCESSFULLY SENT SENDAPDURESPONSE MESSAGE")
-                self.cardScanned = true
-            }
-        }
-    }
-    
     @objc func handleReceivedERezeptTokensFromAVS(_ notification: Notification){
         if let objectReceived = notification.object as? [String: Any] {
             do {
+                print("HANDLE TOKEN")
+
                 let jsonData = try JSONSerialization.data(withJSONObject: objectReceived, options: [])
 
                 if let jsonString = String(data: jsonData, encoding: .utf8) {
@@ -485,10 +427,18 @@
     @objc func handleReceivedERezeptBundlesFromAVS(_ notification: Notification){
         if let objectReceived = notification.object as? [String: Any] {
             do {
+                print("HANDLE BUNDLE")
+                
                 let jsonData = try JSONSerialization.data(withJSONObject: objectReceived, options: [])
 
                 if let jsonString = String(data: jsonData, encoding: .utf8) {
                     self.eRezeptBundlesFromAVS = jsonString
+                }
+                
+                // Starte asynchronen Task
+                Task {
+                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    self.cardScanned = true
                 }
             } catch {
                 print("Fehler beim Konvertieren des Dictionaries zu einem String: \(error.localizedDescription)")
@@ -499,6 +449,8 @@
     @objc func handleReceivedTasklistError(_ notification: Notification){
         if let objectReceived = notification.object as? [String: Any] {
             do {
+                print("HANDLE TASKLISTERROR")
+                
                 let jsonData = try JSONSerialization.data(withJSONObject: objectReceived, options: [])
 
                 if let jsonString = String(data: jsonData, encoding: .utf8) {

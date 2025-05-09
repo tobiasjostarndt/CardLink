@@ -14,26 +14,26 @@ public class WebSocketClientManager: ObservableObject {
     @Published public var cardSessionId: String?
     public var cancellables = Set<AnyCancellable>()
     private var sendAPDUMessageCount = 0
-    
+
     public init() {
         self.webSocketClient = WebSocketClient()
         subscribeToConnectionStatus()
         subscribeToWebSocketMessages()
     }
-    
+
     public func connect(to url: String) {
         webSocketClient?.connect(to: url)
     }
-    
+
     public func send(_ jsonObject: Any, onSuccess: @escaping () -> Void) {
         webSocketClient?.send(jsonObject, onSuccess: onSuccess)
     }
-    
+
     public func send(_ message: String, onSuccess: @escaping () -> Void) {
         webSocketClient?.socket.write(string: message)
         onSuccess()
     }
-    
+
     private func subscribeToConnectionStatus() {
         webSocketClient?.connectionStatusPublisher
             .sink { [weak self] isConnected in
@@ -41,7 +41,7 @@ public class WebSocketClientManager: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func subscribeToWebSocketMessages() {
         webSocketClient?.messagePublisher
             .sink { [weak self] message in
@@ -49,58 +49,106 @@ public class WebSocketClientManager: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func handleWebSocketMessage(_ message: String) {
         print("Handling WebSocket message: \(message)")
         guard let data = message.data(using: .utf8) else {
             print("Failed to convert message to data.")
             return
         }
-        
+
         do {
-            if let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [Any],
-               jsonArray.count > 2,
-               let messageDict = jsonArray[0] as? [String: Any],
-               let messageType = messageDict["type"] as? String,
-               let correlationId: String? = {
-                if jsonArray[2] is NSNull {
-                    return ""
-                } else {
-                    return jsonArray[2] as? String
-                }
-            }() {
-                
+            if let jsonArray = try JSONSerialization.jsonObject(
+                with: data,
+                options: []
+            ) as? [Any],
+                jsonArray.count > 2,
+                let messageDict = jsonArray[0] as? [String: Any],
+                let messageType = messageDict["type"] as? String,
+                let correlationId: String? = {
+                    if jsonArray[2] is NSNull {
+                        return ""
+                    } else {
+                        return jsonArray[2] as? String
+                    }
+                }()
+            {
+
                 switch messageType {
-                    
+
                 case "confirmSMSCodeResponse":
                     if let payload = messageDict["payload"] as? String {
-                        print("Received confirmSMSCodeResponse message with payload: \(payload)")
-                        NotificationCenter.default.post(name: .confirmSMSCodeResponse, object: ["payload": payload])
+                        print(
+                            "Received confirmSMSCodeResponse message with payload: \(payload)"
+                        )
+                        NotificationCenter.default.post(
+                            name: .confirmSMSCodeResponse,
+                            object: ["payload": payload]
+                        )
                     }
-                    
+
                 case "sendAPDU":
                     if let payload = messageDict["payload"] as? String {
-                        print("Received sendAPDU message with payload: \(payload) and correlationId: \(correlationId)")
-                        
-                        sendAPDUMessageCount += 1
-                        
-                        if sendAPDUMessageCount == 1 {
-                            NotificationCenter.default.post(name: .receivedFirstSendAPDU, object: ["payload": payload, "correlationId": correlationId])
-                        } else if sendAPDUMessageCount == 2 {
-                            NotificationCenter.default.post(name: .receivedSecondSendAPDU, object: ["payload": payload, "correlationId": correlationId])
+                        if let correlationId = correlationId {
+                            print(
+                                "Received sendAPDU message with payload: \(payload), correlationId: \(correlationId)"
+                            )
+                        } else {
+                            print(
+                                "Received sendAPDU message with payload: \(payload), correlationId: nil"
+                            )
                         }
+                        NotificationCenter.default.post(
+                            name: .receivedSendAPDU,
+                            object: [
+                                "payload": payload,
+                                "correlationId": correlationId,
+                            ]
+                        )
+                    } else {
+                        print(
+                            "Received sendAPDU message but payload is missing or invalid."
+                        )
                     }
-                    
+
                 case "eRezeptTokensFromAVS":
-                    print("Received eRezeptTokensFromAVS message with correlationId: \(correlationId)")
-                    if let payload = messageDict["payload"] as? String {
-                        NotificationCenter.default.post(name: .receivedERezeptTokensFromAVS, object: ["payload": payload, "correlationId": correlationId])
+                    if let correlationId = correlationId {
+                        print(
+                            "Received eRezeptTokensFromAVS message with correlationId: \(correlationId)"
+                        )
+                    } else {
+                        print(
+                            "Received eRezeptTokensFromAVS message with no correlationId"
+                        )
                     }
-                    
-                case "eRezeptBundlesFromAVS":
-                    print("Received eRezeptBundlesFromAVS message with correlationId: \(correlationId)")
                     if let payload = messageDict["payload"] as? String {
-                        NotificationCenter.default.post(name: .receivedERezeptBundlesFromAVS, object: ["payload": payload, "correlationId": correlationId])
+                        NotificationCenter.default.post(
+                            name: .receivedERezeptTokensFromAVS,
+                            object: [
+                                "payload": payload,
+                                "correlationId": correlationId,
+                            ]
+                        )
+                    }
+
+                case "eRezeptBundlesFromAVS":
+                    if let correlationId = correlationId {
+                        print(
+                            "Received eRezeptBundlesFromAVS message with correlationId: \(correlationId)"
+                        )
+                    } else {
+                        print(
+                            "Received eRezeptBundlesFromAVS message with no correlationId"
+                        )
+                    }
+                    if let payload = messageDict["payload"] as? String {
+                        NotificationCenter.default.post(
+                            name: .receivedERezeptBundlesFromAVS,
+                            object: [
+                                "payload": payload,
+                                "correlationId": correlationId,
+                            ]
+                        )
                     }
                     
                 case "receiveTasklistError":
@@ -108,7 +156,7 @@ public class WebSocketClientManager: ObservableObject {
                     if let payload = messageDict["payload"] as? String {
                         NotificationCenter.default.post(name: .receivedTasklistError, object: ["payload": payload, "correlationId": correlationId])
                     }
-                    
+
                 default:
                     print("Other message type: \(messageType)")
                 }
@@ -120,11 +168,16 @@ public class WebSocketClientManager: ObservableObject {
 }
 
 extension Notification.Name {
-    static let confirmSMSCodeResponse = Notification.Name("confirmSMSCodeResponse")
-    static let receivedFirstSendAPDU = Notification.Name("receivedFirstSendAPDU")
-    static let receivedSecondSendAPDU = Notification.Name("receivedSecondSendAPDU")
-    static let receivedERezeptTokensFromAVS = Notification.Name("receivedERezeptTokensFromAVS")
-    static let receivedERezeptBundlesFromAVS = Notification.Name("receivedERezeptBundlesFromAVS")
+    public static let confirmSMSCodeResponse = Notification.Name(
+        "confirmSMSCodeResponse"
+    )
+    public static let receivedSendAPDU = Notification.Name("receivedSendAPDU")
+    public static let receivedERezeptTokensFromAVS = Notification.Name(
+        "receivedERezeptTokensFromAVS"
+    )
+    public static let receivedERezeptBundlesFromAVS = Notification.Name(
+        "receivedERezeptBundlesFromAVS"
+    )
     static let receivedTasklistError = Notification.Name("receivedTasklistError")
 }
 
@@ -133,7 +186,7 @@ public class MockWebSocketClientManager: WebSocketClientManager {
         super.init()
         self.isConnected = false
     }
-    
+
     public override func connect(to url: String) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.isConnected = true
